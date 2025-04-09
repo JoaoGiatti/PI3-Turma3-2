@@ -1,7 +1,7 @@
 <img width=100% src="https://capsule-render.vercel.app/api?type=waving&color=E2DA06&height=120&section=header"/>
 
 <div align="center">
-    <img src="Projeto/src/view/assets/logoREADME.png" alt="Logo da Wager" width="300"/>
+    <img src="ReadmeAssets/SuperIDLogo.png" alt="SuperId Logo" width="300"/>
 </div>
 
 <div align="center">
