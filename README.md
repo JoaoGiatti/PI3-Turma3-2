@@ -187,4 +187,4 @@ Um agradecimento especial aos integrantes do PI3, que contribuíram para este pr
   </tr>
 </table>
 
-<img width=100% src="https://capsule-render.vercel.app/api?type=waving&color=2480D3&height=120&section=footer"/>
+<img width=100% src="https://capsule-render.vercel.app/api?type=waving&color=E2DA06&height=120&section=footer"/>
