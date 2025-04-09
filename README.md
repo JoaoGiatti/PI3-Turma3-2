@@ -211,13 +211,13 @@ Nesta seção, apresentamos as principais telas do sistema, destacando suas func
 Um agradecimento especial a todas as pessoas que contribuíram para este projeto.
 
 <table>
-  <!-- Informações sobre o Jean -->
+  <!-- Informações sobre a Maria -->
   <tr>
     <td align="center" width="150px">
-      <a href="https://github.com/JeanYuki148" style="color: #ffffff; text-decoration: none;">
+      <a href="https://github.com/Maria Gabriella Xavier Puccinelli" style="color: #ffffff; text-decoration: none;">
         <img src="https://avatars.githubusercontent.com/u/177983282?v=4" width="100px;" alt="Jean Yuki Profile Picture" style="border-radius: 50%;"/><br>
         <sub>
-          <strong>JEAN YUKI</strong>
+          <strong>Maria Gabriela</strong>
         </sub>
       </a>
     </td>
@@ -228,28 +228,6 @@ Um agradecimento especial a todas as pessoas que contribuíram para este projeto
             a estrutura e os relacionamentos entre as tabelas, fornecendo uma base sólida para o desenvolvimento e a organização
             dos dados no sistema. Além disso, atuou essencialmente como QA (Quality Assurance), garantindo que o sistema atendesse aos requisitos
             definidos na documentação, realizando testes para assegurar a correção das funcionalidades e o funcionamento adequado do sistema.
-        </p>
-    </td>
-  </tr>
-
-  <!-- Informações sobre a Jhenifer -->
-  <tr>
-    <td align="center" width="150px">
-      <a href="https://github.com/JheniferLais" style="color: #ffffff; text-decoration: none;">
-        <img src="https://avatars.githubusercontent.com/u/145135351" width="100px;" alt="Jhenifer Laís Profile Picture" style="border-radius: 50%;"/><br>
-        <sub>
-          <strong>JHENIFER LAÍS</strong>
-        </sub>
-      </a>
-    </td>
-    <td>
-      <h3>Backend, Banco de Dados, Frontend, Integração e Planejamento</h3>
-        <p>
-            Jhenifer foi responsável pelo desenvolvimento do backend, implementando a arquitetura MVC (Model-View-Controller)
-            para estruturar o projeto de forma organizada. Implementou o banco de dados, cuidando da criação da entidades
-            e relacionamentos. Realizou a integração entre o backend e o frontend, além de desenvolver a lógica de programação 
-            responsável pela interatividade e funcionalidade do frontend utilizando JavaScript. Além disso, atuou na
-            organização do time, colaborando na coordenação de tarefas e no cumprimento dos prazos.
         </p>
     </td>
   </tr>
@@ -265,14 +243,49 @@ Um agradecimento especial a todas as pessoas que contribuíram para este projeto
       </a>
     </td>
     <td>
-      <h3>Frontend, Backend, UI/UX, Prototipação, Integração e Depuração</h3>
+      <h3>Backend, UI/UX, Prototipação e Integração</h3>
         <p>
-            João foi responsável por grande parte do planejamento de disposição de elementos e lógica de navegação
-            entre as páginas web. Significante quanto a parte da programação em Frontend (html, css e javaScript),
-            e organização da linha de trabalho. Além de contribuir com a integração "Back to Front", conectando parte da
-            lógica bruta do backend com os elementos distintos do frontend, João também foi notório quanto a identidade
-            visual do projeto, e grande habilidade na aplicação de técnicas de depuração, contribuindo para a identificação 
-            e resolução eficiente de problemas durante o desenvolvimento.
+            ------
+        </p>
+    </td>
+  </tr>
+
+  <!-- Informações sobre a Sofia -->
+  <tr>
+    <td align="center" width="150px">
+      <a href="https://github.com/Sofia de Abreu Guimaraes" style="color: #ffffff; text-decoration: none;">
+        <img src="https://avatars.githubusercontent.com/u/91966589?v=4" width="100px;" alt="João Giatti Profile Picture" style="border-radius: 50%;"/><br>
+        <sub>
+          <strong>Sofia Abreu</strong>
+        </sub>
+      </a>
+    </td>
+    <td>
+      <h3>Backend, UI/UX, Prototipação e Integração</h3>
+        <p>
+            ------
+        </p>
+    </td>
+  </tr>
+
+  <!-- Informações sobre o Vitor -->
+  <tr>
+    <td align="center" width="150px">
+      <a href="https://github.com/vitorhugovhbds" style="color: #ffffff; text-decoration: none;">
+        <img src="https://avatars.githubusercontent.com/u/145135351" width="100px;" alt="Jhenifer Laís Profile Picture" style="border-radius: 50%;"/><br>
+        <sub>
+          <strong>Vitor Hugo</strong>
+        </sub>
+      </a>
+    </td>
+    <td>
+      <h3>Backend, Banco de Dados, Frontend, Integração e Planejamento</h3>
+        <p>
+            Jhenifer foi responsável pelo desenvolvimento do backend, implementando a arquitetura MVC (Model-View-Controller)
+            para estruturar o projeto de forma organizada. Implementou o banco de dados, cuidando da criação da entidades
+            e relacionamentos. Realizou a integração entre o backend e o frontend, além de desenvolver a lógica de programação 
+            responsável pela interatividade e funcionalidade do frontend utilizando JavaScript. Além disso, atuou na
+            organização do time, colaborando na coordenação de tarefas e no cumprimento dos prazos.
         </p>
     </td>
   </tr>
