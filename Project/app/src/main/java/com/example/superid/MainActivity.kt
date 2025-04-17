@@ -1,5 +1,6 @@
 package com.example.superid
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -12,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -37,6 +39,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun SuperIDScreen() {
+    val context = LocalContext.current // contexto atual da aplicação
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -82,7 +86,9 @@ fun SuperIDScreen() {
         Spacer(modifier = Modifier.height(32.dp))
 
         Button(
-            onClick = { /* Ação de login */ },
+            onClick = {
+                context.startActivity(Intent(context, LogInActivity::class.java))
+            },
             colors = ButtonDefaults.buttonColors(
                 containerColor = Yellow,
                 contentColor = DarkGray
@@ -96,7 +102,7 @@ fun SuperIDScreen() {
         Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedButton(
-            onClick = { /* Ação de registro */ },
+            onClick = { context.startActivity(Intent(context, SignInActivity::class.java)) },
             colors = ButtonDefaults.outlinedButtonColors(
                 containerColor = Color.Transparent,
                 contentColor = White
