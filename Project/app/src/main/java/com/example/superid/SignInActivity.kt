@@ -21,5 +21,5 @@ class SignInActivity : ComponentActivity() {
 
 @Composable
 fun SignInScreen() {
-    Text("Tela de Cadastro")
+    Text("Tela de Cadastro aaaa")
 }
