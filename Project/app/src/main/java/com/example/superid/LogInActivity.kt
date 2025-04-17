@@ -3,29 +3,24 @@ package com.example.superid
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-/*import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff*/
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-// import com.example.superid.ui.theme.SuperIDTheme
 
 class LogInActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,7 +34,6 @@ class LogInActivity : ComponentActivity() {
 @Composable
 fun LogInScreen() {
     val yellow = Color(0xFFE2DA06)
-    val darkYellow = Color(0xFFC3BC00)
     val darkGray = Color(0xFF131313)
     val textWhite = Color(0xFFFFFFFF)
     val textGray = Color(0xFFAFAFAF)
@@ -49,9 +43,7 @@ fun LogInScreen() {
     var passwordVisible by remember { mutableStateOf(false) }
 
     Surface(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(darkGray),
+        modifier = Modifier.fillMaxSize(),
         color = darkGray
     ) {
         Column(
@@ -68,6 +60,7 @@ fun LogInScreen() {
                 modifier = Modifier
                     .size(36.dp)
                     .padding(8.dp)
+                    .clickable { /* Voltar para a MainActivity */ }
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -126,12 +119,12 @@ fun LogInScreen() {
                 onValueChange = { password = it },
                 placeholder = { Text("***********", color = textGray) },
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                /*trailingIcon = {
-                    val icon = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                trailingIcon = {
+                    val icon = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(icon, contentDescription = null, tint = yellow)
                     }
-                }, */
+                },
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = yellow,
                     focusedBorderColor = yellow,
@@ -186,3 +179,4 @@ fun LogInScreen() {
         }
     }
 }
+

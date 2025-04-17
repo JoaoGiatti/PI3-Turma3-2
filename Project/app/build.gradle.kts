@@ -66,4 +66,5 @@ dependencies {
     //dependencies do firebase
     implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
     implementation("com.google.firebase:firebase-analytics")
+    implementation("androidx.compose.material:material-icons-extended")
 }
