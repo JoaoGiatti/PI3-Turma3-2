@@ -21,5 +21,5 @@ class LogInActivity : ComponentActivity() {
 
 @Composable
 fun LogInScreen() {
-    Text("Tela de login")
+    Text("Tela de login aaaaaaa")
 }
