@@ -1,5 +1,6 @@
 package com.example.superid
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,11 +17,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+
 
 class LogInActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,6 +38,8 @@ class LogInActivity : ComponentActivity() {
 
 @Composable
 fun LogInScreen() {
+    val context = LocalContext.current
+
     val yellow = Color(0xFFE2DA06)
     val darkGray = Color(0xFF131313)
     val textWhite = Color(0xFFFFFFFF)
@@ -49,44 +56,43 @@ fun LogInScreen() {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.Start
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.Top
         ) {
+            // Ícone de voltar
             Icon(
                 imageVector = Icons.Default.ArrowBack,
                 contentDescription = "Back",
                 tint = textWhite,
                 modifier = Modifier
                     .size(36.dp)
-                    .padding(8.dp)
-                    .clickable { /* Voltar para a MainActivity */ }
+                    .clickable { context.startActivity(Intent(context, MainActivity::class.java)) }
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(1.dp))
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "Super",
-                    color = textWhite,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "ID",
-                    color = yellow,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold
+            // Logo centralizada
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.superidlogowhiteyellow),
+                    contentDescription = "Logo Super ID",
+                    modifier = Modifier.size(120.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Text(
                 text = "Vamos fazer seu login",
                 color = textWhite,
                 fontSize = 16.sp
             )
+
             Text(
                 text = "Sentimos sua falta!",
                 color = textWhite,
@@ -96,7 +102,9 @@ fun LogInScreen() {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text(text = "Seu Email Mestre:", color = textWhite)
+            // Campo de email
+            Text(text = "Seu Email:", color = textWhite)
+            Spacer(modifier = Modifier.height(10.dp))
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -113,7 +121,9 @@ fun LogInScreen() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Campo de senha
             Text(text = "Sua Senha Mestre:", color = textWhite)
+            Spacer(modifier = Modifier.height(10.dp))
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -137,6 +147,7 @@ fun LogInScreen() {
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Esqueceu a senha
             Text(
                 text = "Esqueceu a senha?",
                 color = textWhite,
@@ -145,6 +156,7 @@ fun LogInScreen() {
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            // Botão de Entrar
             Button(
                 onClick = {},
                 colors = ButtonDefaults.buttonColors(containerColor = yellow),
@@ -158,9 +170,18 @@ fun LogInScreen() {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
+            // Cadastro
+            Row(
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
                 Text("Não tem uma conta? ", color = textWhite)
-                Text("Cadastre-se", color = textGray)
+                Text(
+                    "Cadastre-se",
+                    color = textGray,
+                    modifier = Modifier.clickable {
+                        context.startActivity(Intent(context, SignInActivity::class.java))
+                    }
+                )
             }
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -170,7 +191,8 @@ fun LogInScreen() {
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = "Ao continuar você concorda com os Termos de Serviço\ne Política de Privacidade da Nome",
+                text = "Ao continuar você concorda com os Termos de Serviço\n" +
+                        "e Política de Privacidade da Nome",
                 color = textGray,
                 fontSize = 12.sp,
                 lineHeight = 16.sp,
@@ -179,4 +201,3 @@ fun LogInScreen() {
         }
     }
 }
-
