@@ -2,6 +2,7 @@ package com.example.superid
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
+import com.google.firebase.auth.FirebaseAuth
 
 
 class LogInActivity : ComponentActivity() {
@@ -39,15 +41,15 @@ class LogInActivity : ComponentActivity() {
 @Composable
 fun LogInScreen() {
     val context = LocalContext.current
+    val auth = FirebaseAuth.getInstance()
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
 
     val yellow = Color(0xFFE2DA06)
     val darkGray = Color(0xFF131313)
     val textWhite = Color(0xFFFFFFFF)
     val textGray = Color(0xFFAFAFAF)
-
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -158,7 +160,21 @@ fun LogInScreen() {
 
             // Botão de Entrar
             Button(
-                onClick = {},
+                onClick = {
+                    // Lógica de autenticação
+                    if (email.isNotBlank() && password.isNotBlank()) {
+                        auth.signInWithEmailAndPassword(email, password)
+                            .addOnCompleteListener {
+                                if (it.isSuccessful) {
+                                    context.startActivity(Intent(context, HomeActivity::class.java))
+                                } else {
+                                    Toast.makeText(context, "Falha ao fazer login", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                    } else{
+                        Toast.makeText(context, "Preencha todos os campos", Toast.LENGTH_SHORT).show()
+                    }
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = yellow),
                 modifier = Modifier
                     .fillMaxWidth()
