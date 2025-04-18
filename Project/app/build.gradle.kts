@@ -67,6 +67,9 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    //dependência do Material Icons Extended
+    implementation("androidx.compose.material:material-icons-extended")
+
     //dependencies do firebase
     implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
     implementation("com.google.firebase:firebase-analytics")
