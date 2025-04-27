@@ -30,7 +30,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
+import android.provider.Settings
+
 
 class SignInActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,6 +48,7 @@ class SignInActivity : ComponentActivity() {
 fun SignInScreen() {
     val context = LocalContext.current
     val auth = FirebaseAuth.getInstance()
+    val firestore = FirebaseFirestore.getInstance()
 
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -250,6 +254,7 @@ fun SignInScreen() {
                             .addOnCompleteListener { task ->
                                 isLoading = false
                                 if (task.isSuccessful) {
+
                                     // Envia email de verificação
                                     val user = auth.currentUser
                                     user?.sendEmailVerification()?.addOnCompleteListener { verifyTask ->
@@ -262,13 +267,41 @@ fun SignInScreen() {
                                             errorMessage = verifyTask.exception?.message ?: "Erro ao enviar email de verificação"
                                         }
                                     }
+
+                                    val uid = auth.currentUser?.uid ?: return@addOnCompleteListener
+                                    val androidId = Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
+
+                                    val userData = hashMapOf(
+                                        "UID" to uid,
+                                        "IMEI" to androidId,
+                                        "emailMestre" to email,
+                                        "nome" to name,
+                                        "senhaMestre" to password
+                                    )
+
+                                    firestore.collection("Users")
+                                        .document(uid)
+                                        .set(userData)
+                                        .addOnSuccessListener {
+                                            context.startActivity(
+                                                Intent(
+                                                    context,
+                                                    HomeActivity::class.java
+                                                )
+                                            )
+                                        }
+                                        .addOnFailureListener { e ->
+                                            errorMessage =
+                                                "Erro ao salvar dados: ${e.localizedMessage}"
+                                        }
+
                                 } else {
                                     errorMessage = task.exception?.message ?: "Erro desconhecido"
                                 }
                             }
                     }
                 },
-                enabled = !isLoading,
+                    enabled = !isLoading,
                 colors = ButtonDefaults.buttonColors(containerColor = yellow),
                 modifier = Modifier
                     .fillMaxWidth()
