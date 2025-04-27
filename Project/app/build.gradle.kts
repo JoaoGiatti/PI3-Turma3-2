@@ -74,4 +74,8 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     implementation ("com.google.firebase:firebase-auth-ktx")
     implementation ("androidx.compose.material:material-icons-extended:1.6.0")
+
+    // Pager do Accompanist - navegação horizontal entre telas
+    implementation ("com.google.accompanist:accompanist-pager:0.34.0")
+    implementation ("com.google.accompanist:accompanist-pager-indicators:0.34.0")
 }
