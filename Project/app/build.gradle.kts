@@ -84,4 +84,10 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore")
     implementation("androidx.core:core-ktx:1.10.1")
 
+
+    // Pager do Accompanist - navegação horizontal entre telas
+    implementation ("com.google.accompanist:accompanist-pager:0.34.0")
+    implementation ("com.google.accompanist:accompanist-pager-indicators:0.34.0")
+
+    implementation ("com.google.accompanist:accompanist-pager-indicators:0.32.0")
 }
