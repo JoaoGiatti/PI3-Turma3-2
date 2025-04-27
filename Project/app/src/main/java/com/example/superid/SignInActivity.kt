@@ -16,7 +16,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,14 +23,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseAuth
@@ -65,6 +59,8 @@ fun SignInScreen() {
     var emailError by remember { mutableStateOf("") }
     var passwordError by remember { mutableStateOf("") }
     var termsError by remember { mutableStateOf("") }
+
+    var showAlertDialog by remember { mutableStateOf(false) }
 
     val yellow = Color(0xFFE2DA06)
     val darkGray = Color(0xFF131313)
@@ -254,7 +250,18 @@ fun SignInScreen() {
                             .addOnCompleteListener { task ->
                                 isLoading = false
                                 if (task.isSuccessful) {
-                                    context.startActivity(Intent(context, HomeActivity::class.java))
+                                    // Envia email de verificação
+                                    val user = auth.currentUser
+                                    user?.sendEmailVerification()?.addOnCompleteListener { verifyTask ->
+                                        if (verifyTask.isSuccessful) {
+                                            // Vai para a tela de aviso de verificação de e-mail
+                                            context.startActivity(Intent(context, EmailVerificationActivity::class.java))
+                                            // Finaliza a tela de cadastro
+                                            (context as? ComponentActivity)?.finish()
+                                        } else {
+                                            errorMessage = verifyTask.exception?.message ?: "Erro ao enviar email de verificação"
+                                        }
+                                    }
                                 } else {
                                     errorMessage = task.exception?.message ?: "Erro desconhecido"
                                 }
@@ -287,21 +294,6 @@ fun SignInScreen() {
                     modifier = Modifier.padding(top = 16.dp)
                 )
             }
-
         }
     }
-}
-
-
-private fun validateForm(
-    name: String,
-    email: String,
-    password: String,
-    termsAccepted: Boolean
-): Boolean {
-    if (name.isEmpty()) return false
-    if (email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) return false
-    if (password.length < 6) return false
-    if (!termsAccepted) return false
-    return true
 }
