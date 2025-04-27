@@ -29,6 +29,7 @@ import androidx.compose.ui.res.painterResource
 import com.google.firebase.auth.FirebaseAuth
 
 
+
 class LogInActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
