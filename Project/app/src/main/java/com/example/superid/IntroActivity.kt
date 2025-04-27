@@ -4,12 +4,13 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.HorizontalPagerIndicator
+import com.google.accompanist.pager.HorizontalPagerIndicator
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -22,11 +23,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 
-class IntroScreen : ComponentActivity() {
+class IntroActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -35,44 +39,72 @@ class IntroScreen : ComponentActivity() {
     }
 }
 
+@Preview
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun IntroScreen() {
     val context = LocalContext.current
     val yellow = Color(0xFFE2DA06)
     val darkGray = Color(0xFF131313)
+    val darkGrayLigher = Color(0xFF161616)
     val textWhite = Color(0xFFFFFFFF)
     val textGray = Color(0xFFAFAFAF)
 
-    val pagerState = rememberPagerState(initialPage = 0)
+    val pagerState = rememberPagerState(
+        initialPage = 0,
+        pageCount = { 4 }
+    )
     val scope = rememberCoroutineScope()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = darkGray
+        color = darkGrayLigher
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp, vertical = 16.dp),
+                .padding(horizontal = 24.dp, vertical = 16.dp)
+                .padding(bottom = 48.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Ícone de voltar
-            Icon(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Back",
-                tint = textWhite,
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .size(36.dp)
-                    .clickable {
-                        context.startActivity(Intent(context, MainActivity::class.java))
-                    }
-            )
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 52.dp)
+            ) {
+                // Ícone de voltar (grudado à esquerda)
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Back",
+                    tint = textWhite,
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clickable {
+                            context.startActivity(Intent(context, MainActivity::class.java))
+                        }
+                )
+
+                Spacer(modifier = Modifier.weight(1f)) // Empurra a logo pro centro
+
+                Image(
+                    painter = painterResource(id = R.drawable.superidlogowhiteyellow),
+                    contentDescription = "Logo SuperID",
+                    modifier = Modifier
+                        .height(24.dp)
+                )
+
+                Spacer(modifier = Modifier.weight(1f)) // Equilibra a Row pra deixar a logo exatamente no centro
+
+                // (opcionalmente, outro Spacer pra deixar a Row equilibrada)
+            }
+
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // Pager de páginas
             HorizontalPager(
-                pageCount = 3,
                 state = pagerState,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -82,29 +114,39 @@ fun IntroScreen() {
                     modifier = Modifier
                         .fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
                 ) {
                     // Aqui você coloca a imagem da página
                     Image(
-                        painter = painterResource(id = R.drawable.seu_icone_aqui),
+                        painter = when (page) {
+                            0 -> painterResource(id = R.drawable.intro1)
+                            1 -> painterResource(id = R.drawable.intro2)
+                            2 -> painterResource(id = R.drawable.intro3)
+                            3 -> painterResource(id = R.drawable.intro4)
+                            else -> painterResource(id = R.drawable.intro1)
+                        },
                         contentDescription = "Imagem Intro",
                         modifier = Modifier
-                            .size(200.dp)
-                            .padding(16.dp)
+                            .fillMaxWidth(0.9f)
+                            .aspectRatio(1f)
                     )
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(0.dp))
 
                     // Título
                     Text(
                         text = when (page) {
-                            0 -> "Bem-vindo ao SuperId!"
-                            1 -> "Segurança em primeiro lugar."
-                            2 -> "Vamos começar!"
+                            0 -> "Segurança em 1° Lugar!"
+                            1 -> "Login com QRCode!"
+                            2 -> "Fácil e personalizável!"
+                            3 -> "Vamos Começar!"
                             else -> ""
                         },
                         fontSize = 24.sp,
+                        modifier = Modifier
+                            .padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
+                            .fillMaxWidth(),
                         fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Left,
                         color = textWhite
                     )
 
@@ -113,14 +155,17 @@ fun IntroScreen() {
                     // Descrição
                     Text(
                         text = when (page) {
-                            0 -> "Armazene suas senhas com segurança e praticidade."
-                            1 -> "Proteja seus dados com autenticação moderna."
-                            2 -> "Crie sua conta e comece a usar!"
+                            0 -> "Armazene todas as suas senhas com segurança em um só lugar, protegidas por criptografia avançada."
+                            1 -> "Realize o login em sites e aplicativos sem precisar lembrar daquela senha difícil! Escaneie um QRCode, e voilà!"
+                            2 -> "Organize suas senhas como quiser! Categoriz por sites, apps ou qualquer outra forma que te faça sentido"
+                            3 -> "Agora que você já conhece o SuperID, vamos começçar com a configuração da sua conta!"
                             else -> ""
                         },
-                        fontSize = 16.sp,
+                        fontSize = 20.sp,
                         color = textGray,
-                        modifier = Modifier.padding(horizontal = 16.dp),
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .wrapContentHeight(),
                         lineHeight = 22.sp
                     )
                 }
@@ -129,34 +174,42 @@ fun IntroScreen() {
             Spacer(modifier = Modifier.height(24.dp))
 
             // Indicador de páginas
-            HorizontalPagerIndicator(
-                pagerState = pagerState,
-                activeColor = yellow,
-                inactiveColor = textGray,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            )
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                repeat(4) { index ->
+                    val color = if (pagerState.currentPage == index) yellow else textGray
+                    Box(
+                        modifier = Modifier
+                            .padding(4.dp)
+                            .size(10.dp)
+                            .background(color, shape = RoundedCornerShape(50))
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
             // Botão Continuar
             Button(
                 onClick = {
-                    if (pagerState.currentPage < 2) {
+                    if (pagerState.currentPage < 3) {
                         scope.launch {
                             pagerState.animateScrollToPage(pagerState.currentPage + 1)
                         }
                     } else {
-                        context.startActivity(Intent(context, LoginActivity::class.java))
+                        context.startActivity(Intent(context, LogInActivity::class.java))
                     }
                 },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
+                    .fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = yellow),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(50.dp)
             ) {
                 Text(
-                    text = if (pagerState.currentPage < 2) "Continuar" else "Começar",
+                    text = if (pagerState.currentPage < 3) "Continuar" else "Começar",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = darkGray
