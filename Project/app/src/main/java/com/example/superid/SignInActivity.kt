@@ -301,7 +301,7 @@ fun SignInScreen() {
                             }
                     }
                 },
-                    enabled = !isLoading,
+                enabled = !isLoading,
                 colors = ButtonDefaults.buttonColors(containerColor = yellow),
                 modifier = Modifier
                     .fillMaxWidth()
