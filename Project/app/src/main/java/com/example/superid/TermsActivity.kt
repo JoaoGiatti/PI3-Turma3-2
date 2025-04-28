@@ -22,6 +22,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.toSize
 
@@ -63,7 +65,7 @@ fun TermsScreen(termosText: String) {
             text = "Termos de Uso e Privacidade",
             color = Color.White,
             fontSize = 20.sp,  //
-            fontWeight = FontWeight.Bold,
+            fontFamily = FontFamily(Font(R.font.poppinsbold)),
             modifier = Modifier
                 .padding(bottom = 16.dp)
         )
@@ -129,6 +131,7 @@ fun TermsScreen(termosText: String) {
                                         Text(
                                             text = line,
                                             fontSize = 14.sp,
+                                            fontFamily = FontFamily(Font(R.font.interregular)),
                                             color = Color.White,
                                             lineHeight = 20.sp,
                                             textAlign = TextAlign.Start,
@@ -175,6 +178,7 @@ fun TermsScreen(termosText: String) {
             text = "Ao continuar, você concorda com os Termos de Uso e com a nossa política de privacidade.",
             color = Color.Gray,
             fontSize = 12.sp,
+            fontFamily = FontFamily(Font(R.font.interregular)),
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(vertical = 8.dp)
         )
@@ -195,7 +199,8 @@ fun TermsScreen(termosText: String) {
                 text = "Aceito!",
                 color = Color.Black,
                 fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
+                fontFamily = FontFamily(Font(R.font.interbold))
+
             )
         }
     }

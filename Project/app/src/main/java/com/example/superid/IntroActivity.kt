@@ -22,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -75,14 +77,13 @@ fun IntroScreen() {
                     .padding(top = 52.dp)
             ) {
                 // Ícone de voltar (grudado à esquerda)
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back",
-                    tint = textWhite,
+                Image(
+                    painter = painterResource(id = R.drawable.arrowback),
+                    contentDescription = "Voltar",
                     modifier = Modifier
                         .size(36.dp)
                         .clickable {
-                            context.startActivity(Intent(context, MainActivity::class.java))
+                            (context as? ComponentActivity)?.finish()
                         }
                 )
 
@@ -145,7 +146,7 @@ fun IntroScreen() {
                         modifier = Modifier
                             .padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
                             .fillMaxWidth(),
-                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily(Font(R.font.poppinsbold)),
                         textAlign = TextAlign.Left,
                         color = textWhite
                     )
@@ -161,12 +162,13 @@ fun IntroScreen() {
                             3 -> "Agora que você já conhece o SuperID, vamos começçar com a configuração da sua conta!"
                             else -> ""
                         },
-                        fontSize = 20.sp,
+                        fontSize = 18.sp,
                         color = textGray,
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
                             .wrapContentHeight(),
-                        lineHeight = 22.sp
+
+                        fontFamily = FontFamily(Font(R.font.interregular))
                     )
                 }
             }
@@ -200,7 +202,7 @@ fun IntroScreen() {
                             pagerState.animateScrollToPage(pagerState.currentPage + 1)
                         }
                     } else {
-                        context.startActivity(Intent(context, LogInActivity::class.java))
+                        context.startActivity(Intent(context, SignInActivity::class.java))
                     }
                 },
                 modifier = Modifier
@@ -211,7 +213,7 @@ fun IntroScreen() {
                 Text(
                     text = if (pagerState.currentPage < 3) "Continuar" else "Começar",
                     fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily(Font(R.font.interbold)),
                     color = darkGray
                 )
             }

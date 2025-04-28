@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import com.google.firebase.auth.FirebaseAuth
 
 
@@ -54,64 +56,68 @@ fun LogInScreen() {
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = darkGray
+        color = darkGray,
+
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp, vertical = 16.dp),
+                .padding(50.dp),
             verticalArrangement = Arrangement.Top
         ) {
             // Ícone de voltar
-            Icon(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Back",
-                tint = textWhite,
-                modifier = Modifier
-                    .size(36.dp)
-                    .clickable { context.startActivity(Intent(context, MainActivity::class.java)) }
-            )
-
-            Spacer(modifier = Modifier.height(1.dp))
-
-            // Logo centralizada
-            Box(
+            Spacer(modifier = Modifier.padding(10.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
-                contentAlignment = Alignment.Center
             ) {
+
+                Image(
+                    painter = painterResource(id = R.drawable.arrowback),
+                    contentDescription = "Voltar",
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clickable {
+                            (context as? ComponentActivity)?.finish()
+                        }
+                )
+                Spacer(modifier = Modifier.width(72.dp))
                 Image(
                     painter = painterResource(id = R.drawable.superidlogowhiteyellow),
-                    contentDescription = "Logo Super ID",
-                    modifier = Modifier.size(120.dp)
+                    contentDescription = "Logo SuperID",
+                    modifier = Modifier
+                        .height(24.dp) // ajusta o tamanho se quiser
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(72.dp))
+
 
             Text(
                 text = "Vamos fazer seu login",
                 color = textWhite,
-                fontSize = 16.sp
+                fontSize = 18.sp,
+                fontFamily = FontFamily(Font(R.font.interregular))
             )
+            Spacer(modifier = Modifier.height(4.dp))
 
             Text(
                 text = "Sentimos sua falta!",
                 color = textWhite,
                 fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
+                fontFamily = FontFamily(Font(R.font.poppinsbold))
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(60.dp))
 
             // Campo de email
-            Text(text = "Seu Email:", color = textWhite)
+            Text(text = "Seu Email Mestre:", color = textWhite, fontFamily = FontFamily(Font(R.font.interbold)))
             Spacer(modifier = Modifier.height(10.dp))
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                placeholder = { Text("email.abc@gmail.com", color = textGray) },
+                placeholder = { Text("email.abc@gmail.com", color = textGray, fontFamily = FontFamily(Font(R.font.interbold))) },
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = yellow,
                     focusedBorderColor = yellow,
@@ -122,15 +128,15 @@ fun LogInScreen() {
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
             // Campo de senha
-            Text(text = "Sua Senha Mestre:", color = textWhite)
+            Text(text = "Sua Senha Mestre:", color = textWhite, fontFamily = FontFamily(Font(R.font.interbold)))
             Spacer(modifier = Modifier.height(10.dp))
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                placeholder = { Text("***********", color = textGray) },
+                placeholder = { Text("***********", color = textGray, fontFamily = FontFamily(Font(R.font.interbold))) },
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     val icon = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
@@ -154,10 +160,11 @@ fun LogInScreen() {
             Text(
                 text = "Esqueceu a senha?",
                 color = textWhite,
+                fontFamily = FontFamily(Font(R.font.interregular)),
                 modifier = Modifier.align(Alignment.End)
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(34.dp))
 
             // Botão de Entrar
             Button(
@@ -182,19 +189,20 @@ fun LogInScreen() {
                     .height(56.dp),
                 shape = RoundedCornerShape(30.dp)
             ) {
-                Text("Entrar", color = Color.Black, fontWeight = FontWeight.Bold)
+                Text("Entrar", color = Color.Black, fontFamily = FontFamily(Font(R.font.interbold)))
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(64.dp))
 
             // Cadastro
             Row(
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
-                Text("Não tem uma conta? ", color = textWhite)
+                Text("Não tem uma conta? ", color = textWhite, fontFamily = FontFamily(Font(R.font.interbold)))
                 Text(
                     "Cadastre-se",
                     color = textGray,
+                    fontFamily = FontFamily(Font(R.font.interbold)),
                     modifier = Modifier.clickable {
                         context.startActivity(Intent(context, SignInActivity::class.java))
                     }
@@ -212,7 +220,7 @@ fun LogInScreen() {
                         "e Política de Privacidade da Nome",
                 color = textGray,
                 fontSize = 12.sp,
-                lineHeight = 16.sp,
+                fontFamily = FontFamily(Font(R.font.intermedium)),
                 modifier = Modifier.align(Alignment.CenterHorizontally),
             )
         }
