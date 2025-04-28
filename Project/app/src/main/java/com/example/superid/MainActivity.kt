@@ -18,6 +18,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -66,21 +68,25 @@ fun SuperIDScreen() {
             modifier = Modifier.size(180.dp)
         )
 
-        Spacer(modifier = Modifier.height(50.dp))
+        Spacer(modifier = Modifier.height(46.dp))
 
         Text(
             text = buildAnnotatedString {
                 append("Um modo inovador de fazer login ")
                 pushStyle(SpanStyle(color = Yellow))
-                append("sem usar senhas.")
+                append("sem usar senhas")
+                pushStyle(SpanStyle(color = White))
+                append(".")
                 pop()
             },
             color = White,
-            fontSize = 24.sp,
+            fontSize = 22.sp,
+            fontFamily = FontFamily(Font(R.font.poppinsbold)),
             textAlign = TextAlign.Start,
             modifier = Modifier
                 .fillMaxWidth(0.8f)
-                .padding(horizontal = 12.dp)
+                .padding(horizontal = 10.dp)
+
         )
 
 
@@ -97,7 +103,7 @@ fun SuperIDScreen() {
             modifier = Modifier.fillMaxWidth(0.8f),
             shape = RoundedCornerShape(50.dp)
         ) {
-            Text(text = "Entrar na conta")
+            Text(text = "Entrar na conta", fontFamily = FontFamily(Font(R.font.interbold)))
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -111,7 +117,7 @@ fun SuperIDScreen() {
             modifier = Modifier.fillMaxWidth(0.8f),
             shape = RoundedCornerShape(50.dp)
         ) {
-            Text(text = "Registrar")
+            Text(text = "Registrar", fontFamily = FontFamily(Font(R.font.interbold)))
         }
     }
 }

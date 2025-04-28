@@ -38,6 +38,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.clickable
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 
 class SignInActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,264 +84,302 @@ fun SignInScreen() {
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = darkGray
+        color = darkGray,
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.Top
-        ) {
-            // Ícone de voltar
-            Icon(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Voltar",
-                tint = textWhite,
+            Column(
                 modifier = Modifier
-                    .size(36.dp)
-                    .clickable {
-                        context.startActivity(Intent(context, MainActivity::class.java))
-                    }
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Logo
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 4.dp),
-                contentAlignment = Alignment.Center
+                    .fillMaxSize()
+                    .padding(50.dp),
+                verticalArrangement = Arrangement.Top
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.superidlogowhiteyellow),
-                    contentDescription = "Logo Super ID",
-                    modifier = Modifier.size(120.dp)
-                )
-            }
 
-            Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.padding(10.dp))
+                // Header com seta e logo
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
 
-            Text("Você é novo?", color = textWhite, fontSize = 16.sp)
-            Text("Vamos te cadastrar!", color = textWhite, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Nome
-            Text("Nome completo:", color = textWhite)
-            OutlinedTextField(
-                value = name,
-                onValueChange = {
-                    name = it
-                    nameError = ""
-                },
-                placeholder = { Text("Seu nome completo", color = textGray) },
-                isError = nameError.isNotEmpty(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = yellow,
-                    unfocusedBorderColor = yellow,
-                    focusedTextColor = textWhite,
-                    unfocusedTextColor = textWhite,
-                    cursorColor = yellow
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
-            if (nameError.isNotEmpty()) {
-                Text(nameError, color = Color.Red, fontSize = 12.sp)
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Email
-            Text("Seu melhor e-mail:", color = textWhite)
-            OutlinedTextField(
-                value = email,
-                onValueChange = {
-                    email = it
-                    emailError = ""
-                },
-                placeholder = { Text("exemplo@email.com", color = textGray) },
-                isError = emailError.isNotEmpty(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = yellow,
-                    unfocusedBorderColor = yellow,
-                    focusedTextColor = textWhite,
-                    unfocusedTextColor = textWhite,
-                    cursorColor = yellow
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
-            if (emailError.isNotEmpty()) {
-                Text(emailError, color = Color.Red, fontSize = 12.sp)
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Senha
-            Text("Crie uma senha segura:", color = textWhite)
-            OutlinedTextField(
-                value = password,
-                onValueChange = {
-                    password = it
-                    passwordError = ""
-                },
-                placeholder = { Text("***********", color = textGray) },
-                isError = passwordError.isNotEmpty(),
-                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                trailingIcon = {
-                    val icon = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(icon, contentDescription = null, tint = yellow)
-                    }
-                },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = yellow,
-                    unfocusedBorderColor = yellow,
-                    focusedTextColor = textWhite,
-                    unfocusedTextColor = textWhite,
-                    cursorColor = yellow
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
-            if (passwordError.isNotEmpty()) {
-                Text(passwordError, color = Color.Red, fontSize = 12.sp)
-            }
-
-            Spacer(modifier = Modifier.height(1.dp))
-
-            // Aceite de termos
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(
-                    checked = termsAccepted,
-                    onCheckedChange = {
-                        termsAccepted = it
-                        termsError = ""
-                    },
-                    colors = CheckboxDefaults.colors(
-                        checkedColor = yellow,
-                        uncheckedColor = textWhite
-                    )
-                )
-
-                Text(
-                    text = "Li e aceito os termos de uso e privacidade",
-                    color = Color.White, // ou textWhite se for uma variável definida
-                    modifier = Modifier.clickable {
-                        val intent = Intent(context, TermsActivity::class.java)
-                        context.startActivity(intent)
-                    }
-                )
-            }
-            if (termsError.isNotEmpty()) {
-                Text(termsError, color = Color.Red, fontSize = 12.sp)
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Botão de cadastro
-            Button(
-                onClick = {
-                    var isValid = true
-                    if (name.isBlank()) {
-                        nameError = "Nome obrigatório"
-                        isValid = false
-                    }
-                    if (email.isBlank()) {
-                        emailError = "Email obrigatório"
-                        isValid = false
-                    } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                        emailError = "Email inválido"
-                        isValid = false
-                    }
-                    if (password.length < 6) {
-                        passwordError = "Senha deve ter no mínimo 6 caracteres"
-                        isValid = false
-                    }
-                    if (!termsAccepted) {
-                        termsError = "Você precisa aceitar os termos"
-                        isValid = false
-                    }
-
-                    if (isValid) {
-                        isLoading = true
-                        auth.createUserWithEmailAndPassword(email, password)
-                            .addOnCompleteListener { task ->
-                                isLoading = false
-                                if (task.isSuccessful) {
-
-                                    // Envia email de verificação
-                                    val user = auth.currentUser
-                                    user?.sendEmailVerification()?.addOnCompleteListener { verifyTask ->
-                                        if (verifyTask.isSuccessful) {
-                                            // Vai para a tela de aviso de verificação de e-mail
-                                            context.startActivity(Intent(context, EmailVerificationActivity::class.java))
-                                            // Finaliza a tela de cadastro
-                                            (context as? ComponentActivity)?.finish()
-                                        } else {
-                                            errorMessage = verifyTask.exception?.message ?: "Erro ao enviar email de verificação"
-                                        }
-                                    }
-
-                                    val uid = auth.currentUser?.uid ?: return@addOnCompleteListener
-                                    val androidId = Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
-
-                                    val userData = hashMapOf(
-                                        "UID" to uid,
-                                        "IMEI" to androidId,
-                                        "emailMestre" to email,
-                                        "nome" to name,
-                                        "senhaMestre" to password
-                                    )
-
-                                    firestore.collection("Users")
-                                        .document(uid)
-                                        .set(userData)
-                                        .addOnSuccessListener {
-                                            context.startActivity(
-                                                Intent(
-                                                    context,
-                                                    EmailVerificationActivity::class.java
-                                                )
-                                            )
-                                        }
-                                        .addOnFailureListener { e ->
-                                            errorMessage =
-                                                "Erro ao salvar dados: ${e.localizedMessage}"
-                                        }
-
-                                } else {
-                                    errorMessage = task.exception?.message ?: "Erro desconhecido"
-                                }
+                    Image(
+                        painter = painterResource(id = R.drawable.arrowback),
+                        contentDescription = "Voltar",
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clickable {
+                                (context as? ComponentActivity)?.finish()
                             }
-                    }
-                },
-                enabled = !isLoading,
-                colors = ButtonDefaults.buttonColors(containerColor = yellow),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(30.dp)
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        color = darkGray,
-                        strokeWidth = 2.dp,
-                        modifier = Modifier.size(20.dp)
                     )
-                } else {
-                    Text("Cadastrar", color = Color.Black, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.width(72.dp))
+                    Image(
+                        painter = painterResource(id = R.drawable.superidlogowhiteyellow),
+                        contentDescription = "Logo SuperID",
+                        modifier = Modifier
+                            .height(24.dp) // ajusta o tamanho se quiser
+                    )
                 }
-            }
 
-            // Erro geral
-            if (errorMessage.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(72.dp))
+
+                Text("Você é novo?", color = textWhite, fontSize = 16.sp, fontFamily = FontFamily(Font(R.font.interregular)))
                 Text(
-                    text = errorMessage,
-                    color = Color.Red,
-                    modifier = Modifier.padding(top = 16.dp)
+                    "Vamos te cadastrar!",
+                    color = textWhite,
+                    fontSize = 24.sp,
+                    fontFamily = FontFamily(Font(R.font.poppinsbold))
                 )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Nome
+                Text("Nome completo:", color = textWhite, fontFamily = FontFamily(Font(R.font.interbold)))
+                Spacer(modifier = Modifier.height(10.dp))
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = {
+                        name = it
+                        nameError = ""
+                    },
+                    placeholder = { Text("Seu nome completo", color = textGray, fontFamily = FontFamily(Font(R.font.interbold))) },
+                    isError = nameError.isNotEmpty(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = yellow,
+                        unfocusedBorderColor = yellow,
+                        focusedTextColor = textWhite,
+                        unfocusedTextColor = textWhite,
+                        cursorColor = yellow
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                if (nameError.isNotEmpty()) {
+                    Text(nameError, color = Color.Red, fontSize = 12.sp)
+                }
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                // Email
+                Text("Seu melhor e-mail:", color = textWhite, fontFamily = FontFamily(Font(R.font.interbold)))
+                Spacer(modifier = Modifier.height(10.dp))
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = {
+                        email = it
+                        emailError = ""
+                    },
+                    placeholder = { Text("exemplo@email.com", color = textGray, fontFamily = FontFamily(Font(R.font.interbold))) },
+                    isError = emailError.isNotEmpty(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = yellow,
+                        unfocusedBorderColor = yellow,
+                        focusedTextColor = textWhite,
+                        unfocusedTextColor = textWhite,
+                        cursorColor = yellow
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                if (emailError.isNotEmpty()) {
+                    Text(emailError, color = Color.Red, fontSize = 12.sp)
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Senha
+                Text("Crie uma senha segura:", color = textWhite, fontFamily = FontFamily(Font(R.font.interbold)))
+                Spacer(modifier = Modifier.height(10.dp))
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = {
+                        password = it
+                        passwordError = ""
+                    },
+                    placeholder = { Text("***********", color = textGray) },
+                    isError = passwordError.isNotEmpty(),
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        val icon =
+                            if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(icon, contentDescription = null, tint = yellow)
+                        }
+                    },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = yellow,
+                        unfocusedBorderColor = yellow,
+                        focusedTextColor = textWhite,
+                        unfocusedTextColor = textWhite,
+                        cursorColor = yellow
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                if (passwordError.isNotEmpty()) {
+                    Text(passwordError, color = Color.Red, fontSize = 12.sp)
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Aceite de termos
+                Row(verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()) {
+                    Checkbox(
+                        checked = termsAccepted,
+                        onCheckedChange = {
+                            termsAccepted = it
+                            termsError = ""
+                        },
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = yellow,
+                            uncheckedColor = yellow
+                        )
+                    )
+
+                    val annotatedString = buildAnnotatedString {
+                        withStyle(
+                            style = SpanStyle(
+                                color = Color.White
+                            )
+                        ) {
+                            append("Li e aceito os ")
+                        }
+                        withStyle(
+                            style = SpanStyle(
+                                color = textGray, // cor um pouco mais escura
+                                textDecoration = TextDecoration.Underline
+                            )
+                        ) {
+                            append("Termos de uso e Privacidade")
+                        }
+                    }
+
+                    Text(
+                        text = annotatedString,
+                        modifier = Modifier.clickable {
+                            val intent = Intent(context, TermsActivity::class.java)
+                            context.startActivity(intent)
+                        }
+                    )
+                }
+                if (termsError.isNotEmpty()) {
+                    Text(termsError, color = Color.Red, fontSize = 12.sp)
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Botão de cadastro
+                Button(
+                    onClick = {
+                        var isValid = true
+                        if (name.isBlank()) {
+                            nameError = "Nome obrigatório"
+                            isValid = false
+                        }
+                        if (email.isBlank()) {
+                            emailError = "Email obrigatório"
+                            isValid = false
+                        } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                            emailError = "Email inválido"
+                            isValid = false
+                        }
+                        if (password.length < 6) {
+                            passwordError = "Senha deve ter no mínimo 6 caracteres"
+                            isValid = false
+                        }
+                        if (!termsAccepted) {
+                            termsError = "Você precisa aceitar os termos"
+                            isValid = false
+                        }
+
+                        if (isValid) {
+                            isLoading = true
+                            auth.createUserWithEmailAndPassword(email, password)
+                                .addOnCompleteListener { task ->
+                                    isLoading = false
+                                    if (task.isSuccessful) {
+
+                                        // Envia email de verificação
+                                        val user = auth.currentUser
+                                        user?.sendEmailVerification()
+                                            ?.addOnCompleteListener { verifyTask ->
+                                                if (verifyTask.isSuccessful) {
+                                                    // Vai para a tela de aviso de verificação de e-mail
+                                                    context.startActivity(
+                                                        Intent(
+                                                            context,
+                                                            EmailVerificationActivity::class.java
+                                                        )
+                                                    )
+                                                    // Finaliza a tela de cadastro
+                                                    (context as? ComponentActivity)?.finish()
+                                                } else {
+                                                    errorMessage = verifyTask.exception?.message
+                                                        ?: "Erro ao enviar email de verificação"
+                                                }
+                                            }
+
+                                        val uid =
+                                            auth.currentUser?.uid ?: return@addOnCompleteListener
+                                        val androidId = Settings.Secure.getString(
+                                            context.contentResolver,
+                                            Settings.Secure.ANDROID_ID
+                                        )
+
+                                        val userData = hashMapOf(
+                                            "UID" to uid,
+                                            "IMEI" to androidId,
+                                            "emailMestre" to email,
+                                            "nome" to name,
+                                            "senhaMestre" to password
+                                        )
+
+                                        firestore.collection("Users")
+                                            .document(uid)
+                                            .set(userData)
+                                            .addOnSuccessListener {
+                                                context.startActivity(
+                                                    Intent(
+                                                        context,
+                                                        EmailVerificationActivity::class.java
+                                                    )
+                                                )
+                                            }
+                                            .addOnFailureListener { e ->
+                                                errorMessage =
+                                                    "Erro ao salvar dados: ${e.localizedMessage}"
+                                            }
+
+                                    } else {
+                                        errorMessage =
+                                            task.exception?.message ?: "Erro desconhecido"
+                                    }
+                                }
+                        }
+                    },
+                    enabled = !isLoading,
+                    colors = ButtonDefaults.buttonColors(containerColor = yellow),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(30.dp)
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            color = darkGray,
+                            strokeWidth = 2.dp,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    } else {
+                        Text("Cadastrar", color = Color.Black, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                // Erro geral
+                if (errorMessage.isNotEmpty()) {
+                    Text(
+                        text = errorMessage,
+                        color = Color.Red,
+                        modifier = Modifier.padding(top = 16.dp)
+                    )
+                }
             }
         }
     }
-}
