@@ -286,7 +286,7 @@ fun SignInScreen() {
                                             context.startActivity(
                                                 Intent(
                                                     context,
-                                                    HomeActivity::class.java
+                                                    EmailVerificationActivity::class.java
                                                 )
                                             )
                                         }
