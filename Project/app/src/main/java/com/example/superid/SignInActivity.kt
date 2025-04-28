@@ -34,6 +34,25 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import android.provider.Settings
 
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.clickable
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+
+@Composable
+fun TermosDeUsoLink() {
+    val context = LocalContext.current
+
+    Text(
+        text = "Li e aceito os termos de uso e privacidade",
+        color = Color.White, // ou textWhite se for uma variável definida
+        modifier = Modifier.clickable {
+            val intent = Intent(context, TermsActivity::class.java)
+            context.startActivity(intent)
+        }
+    )
+}
+
 
 class SignInActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -7,6 +7,7 @@
         <DropdownSelection timestamp="2025-04-23T00:18:38.816733700Z">
           <Target type="DEFAULT_BOOT">
             <handle>
+                // IMPORTANTE!!!!! MUDAR O CAMINHO DO DIRETÓRIO SE PRECISO!!!!
               <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\Giatti\.android\avd\Small_Phone_API_35.avd" />
             </handle>
           </Target>
