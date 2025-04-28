@@ -1,0 +1,65 @@
+Termos de Uso do SuperID
+
+Última atualização: 23 de abril de 2025
+Versão: 1.0
+
+Estes Termos de Uso descrevem como o aplicativo SuperID ("Aplicativo"), desenvolvido como parte do Projeto Integrador 3 do curso de Engenharia de Software da Pontifícia Universidade Católica de Campinas, coleta, armazena e utiliza informações dos usuários.
+
+━                                                    ━
+
+1. Coleta e Uso de Dados
+O SuperID coleta e armazena os seguintes dados para funcionamento básico:
+
+1.1 Dados Fornecidos pelo Usuário
+- Nome (apenas para identificação no aplicativo).
+- E-mail (utilizado para autenticação via Firebase Authentication).
+- Senha Mestre (armazenada de forma segura e criptografada pelo Firebase Auth).
+
+1.2 Dados Automáticos
+- UID (Identificador Único do Firebase) – Usado para vincular dados do usuário no banco de dados.
+- IMEI do dispositivo (apenas para controle de acesso e segurança).
+
+1.3 Senhas Pessoais Armazenadas
+- Todas as senhas cadastradas pelo usuário são criptografadas localmente antes de serem enviadas ao Firebase Firestore.
+- O aplicativo não tem acesso às senhas em texto puro.
+
+━                                                   ━
+
+2. Compartilhamento de Dados
+- Nenhum dado pessoal é compartilhado com terceiros, exceto:
+  - Sites parceiros (apenas quando o usuário opta por fazer login sem senha, e apenas o UID é compartilhado mediante confirmação explícita via QR Code).
+  - Google Firebase (para autenticação e armazenamento em nuvem, seguindo as políticas de privacidade da Google).
+
+━                                                   ━
+
+3. Segurança dos Dados
+- O aplicativo utiliza:
+  - Firebase Authentication (para autenticação segura).
+  - Firebase Firestore (banco de dados protegido por regras de segurança).
+  - Criptografia local (algoritmo definido pela equipe) para senhas armazenadas.
+
+Aviso importante: Este é um projeto educacional e não deve ser usado para dados sensíveis ou reais pois não atende a padrões profissionais de segurança.
+
+━                                                   ━
+
+4. Direitos do Usuário
+O usuário pode:
+- Excluir sua conta (removendo todos os dados do Firebase).
+- Redefinir a Senha Mestre (se o e-mail foi validado).
+- Remover senhas salvas a qualquer momento.
+
+━                                                   ━
+
+5. Alterações nesta Política
+Esta política pode ser atualizada conforme evolução do projeto. Mudanças significativas serão comunicadas dentro do aplicativo.
+
+━                                                   ━
+
+6. Contato
+Em caso de dúvidas, entre em contato via repositório oficial do projeto no GitHub.
+
+━                                                   ━
+
+Ao criar uma conta no SuperID ou utilizar qualquer funcionalidade do Aplicativo, o Usuário declara que leu, compreendeu e concorda com estes Termos de Uso. Caso não concorde, o Usuário não deve utilizar o Aplicativo.
+
+Equipe SuperID – Projeto Integrador 3 | Engenharia de Software | PUC-Campinas
