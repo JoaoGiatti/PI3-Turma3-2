@@ -1,5 +1,7 @@
 package com.example.superid
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -22,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
@@ -183,10 +186,17 @@ fun TermsScreen(termosText: String) {
             modifier = Modifier.padding(vertical = 8.dp)
         )
 
-
+        val context = LocalContext.current
         Button(
             onClick = {
+                val sharedPref = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+                sharedPref.edit()
+                    .putBoolean("termos_aceitos", true)
+                    .apply()
 
+                val intent = Intent(context, MainActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                context.startActivity(intent)
             },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE2DA06)),
             modifier = Modifier
