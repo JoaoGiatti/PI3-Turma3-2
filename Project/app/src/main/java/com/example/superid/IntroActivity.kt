@@ -1,5 +1,6 @@
 package com.example.superid
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -202,7 +203,12 @@ fun IntroScreen() {
                             pagerState.animateScrollToPage(pagerState.currentPage + 1)
                         }
                     } else {
-                        context.startActivity(Intent(context, SignInActivity::class.java))
+                        val sharedPref = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+                        sharedPref.edit().putBoolean("tutorial_visto", true).apply()
+
+                        context.startActivity(Intent(context, MainActivity::class.java))
+                        (context as? ComponentActivity)?.finish()
+
                     }
                 },
                 modifier = Modifier
