@@ -11,11 +11,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
-import com.google.accompanist.pager.HorizontalPagerIndicator
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,10 +22,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
@@ -77,7 +72,6 @@ fun IntroScreen() {
                     .padding(horizontal = 16.dp)
                     .padding(top = 52.dp)
             ) {
-                // Ícone de voltar (grudado à esquerda)
                 Image(
                     painter = painterResource(id = R.drawable.arrowback),
                     contentDescription = "Voltar",
@@ -88,7 +82,7 @@ fun IntroScreen() {
                         }
                 )
 
-                Spacer(modifier = Modifier.weight(1f)) // Empurra a logo pro centro
+                Spacer(modifier = Modifier.weight(1f))
 
                 Image(
                     painter = painterResource(id = R.drawable.superidlogowhiteyellow),
@@ -97,15 +91,11 @@ fun IntroScreen() {
                         .height(24.dp)
                 )
 
-                Spacer(modifier = Modifier.weight(1f)) // Equilibra a Row pra deixar a logo exatamente no centro
-
-                // (opcionalmente, outro Spacer pra deixar a Row equilibrada)
+                Spacer(modifier = Modifier.weight(1f))
             }
-
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Pager de páginas
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier
@@ -113,11 +103,9 @@ fun IntroScreen() {
                     .weight(1f)
             ) { page ->
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize(),
+                    modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    // Aqui você coloca a imagem da página
                     Image(
                         painter = when (page) {
                             0 -> painterResource(id = R.drawable.intro1)
@@ -134,7 +122,6 @@ fun IntroScreen() {
 
                     Spacer(modifier = Modifier.height(0.dp))
 
-                    // Título
                     Text(
                         text = when (page) {
                             0 -> "Segurança em 1° Lugar!"
@@ -154,7 +141,6 @@ fun IntroScreen() {
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Descrição
                     Text(
                         text = when (page) {
                             0 -> "Armazene todas as suas senhas com segurança em um só lugar, protegidas por criptografia avançada."
@@ -168,7 +154,6 @@ fun IntroScreen() {
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
                             .wrapContentHeight(),
-
                         fontFamily = FontFamily(Font(R.font.interregular))
                     )
                 }
@@ -176,7 +161,6 @@ fun IntroScreen() {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Indicador de páginas
             Row(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
@@ -195,7 +179,6 @@ fun IntroScreen() {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Botão Continuar
             Button(
                 onClick = {
                     if (pagerState.currentPage < 3) {
@@ -206,13 +189,21 @@ fun IntroScreen() {
                         val sharedPref = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
                         sharedPref.edit().putBoolean("tutorial_visto", true).apply()
 
-                        context.startActivity(Intent(context, MainActivity::class.java))
-                        (context as? ComponentActivity)?.finish()
+                        val termosAceitos = sharedPref.getBoolean("termos_aceitos", false)
+                        val nextActivity = if (termosAceitos) {
+                            MainActivity::class.java
+                        } else {
+                            TermsActivity::class.java
+                        }
 
+                        val intent = Intent(context, nextActivity)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        context.startActivity(intent)
+
+                        (context as? ComponentActivity)?.finish()
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = yellow),
                 shape = RoundedCornerShape(50.dp)
             ) {
