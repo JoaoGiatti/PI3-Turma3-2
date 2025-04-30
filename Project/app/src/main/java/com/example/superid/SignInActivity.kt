@@ -37,6 +37,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import java.security.Key
+import javax.crypto.Cipher
+import javax.crypto.spec.SecretKeySpec
+import android.util.Base64
 
 class SignInActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,6 +51,14 @@ class SignInActivity : ComponentActivity() {
     }
 }
 
+fun encryptPassword(password: String): String {
+    val secretKey = "1234567890123456" // 16 chars para AES-128
+    val key: Key = SecretKeySpec(secretKey.toByteArray(), "AES")
+    val cipher = Cipher.getInstance("AES")
+    cipher.init(Cipher.ENCRYPT_MODE, key)
+    val encryptedBytes = cipher.doFinal(password.toByteArray())
+    return Base64.encodeToString(encryptedBytes, Base64.DEFAULT)
+}
 
 @Composable
 fun SignInScreen() {
@@ -74,20 +86,15 @@ fun SignInScreen() {
     val textGray = Color(0xFFAFAFAF)
     val scrollState = rememberScrollState()
 
-    // Ajuste no Surface para eliminar padding extra
-    Surface(
-        modifier = Modifier
-            .fillMaxSize(), // Preencher toda a tela
-        color = darkGray
-    ) {
+    Surface(modifier = Modifier.fillMaxSize(), color = darkGray) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(50.dp) // Garantir que a Column ocupe toda a tela
-                .verticalScroll(scrollState), // Habilitar rolagem vertical
+                .padding(50.dp)
+                .verticalScroll(scrollState),
             verticalArrangement = Arrangement.Top
         ) {
-            Spacer(modifier = Modifier.height(10.dp)) // Ajuste do espaçamento superior
+            Spacer(modifier = Modifier.height(10.dp))
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -98,9 +105,7 @@ fun SignInScreen() {
                     contentDescription = "Voltar",
                     modifier = Modifier
                         .size(38.dp)
-                        .clickable {
-                            (context as? ComponentActivity)?.finish()
-                        }
+                        .clickable { (context as? ComponentActivity)?.finish() }
                 )
                 Spacer(modifier = Modifier.width(72.dp))
                 Image(
@@ -216,10 +221,7 @@ fun SignInScreen() {
                     }
                 }
 
-                Text(
-                    text = annotatedString,
-
-                    )
+                Text(text = annotatedString)
             }
             if (termsError.isNotEmpty()) Text(termsError, color = Color.Red, fontSize = 12.sp)
 
@@ -250,23 +252,41 @@ fun SignInScreen() {
 
                     if (isValid) {
                         isLoading = true
+                        val encryptedPassword = encryptPassword(password)
+
                         auth.createUserWithEmailAndPassword(email, password)
                             .addOnCompleteListener { task ->
                                 isLoading = false
                                 if (task.isSuccessful) {
-                                    val user = auth.currentUser
-                                    user?.sendEmailVerification()?.addOnCompleteListener { verifyTask ->
-                                        if (verifyTask.isSuccessful) {
-                                            Log.d("SignInActivity", "Email de verificação enviado com sucesso")
-                                            context.startActivity(Intent(context, EmailVerificationActivity::class.java))
-                                            (context as? ComponentActivity)?.finish()
-                                        } else {
-                                            errorMessage = verifyTask.exception?.message ?: "Erro ao enviar email de verificação"
+                                    val uid = auth.currentUser?.uid ?: return@addOnCompleteListener
+                                    val androidId = Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
+
+                                    val userData = hashMapOf(
+                                        "UID" to uid,
+                                        "IMEI" to androidId,
+                                        "emailMestre" to email,
+                                        "nome" to name,
+                                        "senhaMestre" to encryptedPassword
+                                    )
+
+                                    firestore.collection("Users")
+                                        .document(uid)
+                                        .set(userData)
+                                        .addOnSuccessListener {
+                                            auth.currentUser?.sendEmailVerification()?.addOnCompleteListener { verifyTask ->
+                                                if (verifyTask.isSuccessful) {
+                                                    context.startActivity(Intent(context, EmailVerificationActivity::class.java))
+                                                    (context as? ComponentActivity)?.finish()
+                                                } else {
+                                                    errorMessage = verifyTask.exception?.message ?: "Erro ao enviar email de verificação"
+                                                }
+                                            }
                                         }
-                                    }
+                                        .addOnFailureListener { e ->
+                                            errorMessage = "Erro ao salvar dados: ${e.localizedMessage}"
+                                        }
                                 } else {
                                     errorMessage = task.exception?.message ?: "Erro desconhecido"
-                                    Log.e("Auth", "Erro ao criar usuário", task.exception)
                                 }
                             }
                     }
