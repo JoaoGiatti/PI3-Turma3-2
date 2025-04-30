@@ -48,6 +48,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
 
+
     // Compose
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
@@ -74,6 +75,8 @@ dependencies {
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.activity:activity:1.10.1")
     implementation("androidx.constraintlayout:constraintlayout:2.2.1")
+    implementation ("org.bouncycastle:bcprov-jdk15on:1.68")
+
     implementation(libs.androidx.espresso.core)
     implementation(libs.firebase.auth.ktx)
     implementation(libs.firebase.firestore.ktx)
