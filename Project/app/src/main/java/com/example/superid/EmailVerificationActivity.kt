@@ -185,7 +185,7 @@ fun EmailVerificationScreen() {
             // Texto explicativo
             Text(
                 text = "Após confirmar o email, clique em\n"
-                        + "Email já verificado.",
+                        + "Prosseguir.",
                 fontSize = 18.sp,
                 fontFamily = FontFamily(Font(R.font.interregular)),
                 color = textWhite,
@@ -203,7 +203,7 @@ fun EmailVerificationScreen() {
                     .padding(top = 16.dp),
                 shape = RoundedCornerShape(30.dp)
             ) {
-                Text("Email já verificado!", color = Color.Black, fontFamily = FontFamily(Font(R.font.interbold)))
+                Text("Prosseguir", color = Color.Black, fontFamily = FontFamily(Font(R.font.interbold)))
             }
 
             // Botão "Prosseguir sem verificar"

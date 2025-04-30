@@ -11,11 +11,18 @@ class LauncherActivity : ComponentActivity() {
 
         val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         val tutorialVisto = sharedPref.getBoolean("tutorial_visto", false)
+        val termosAceitos = sharedPref.getBoolean("termos_aceitos", false)
 
-        if (tutorialVisto) {
-            startActivity(Intent(this, MainActivity::class.java))
-        } else {
-            startActivity(Intent(this, IntroActivity::class.java))
+        when {
+            !tutorialVisto -> {
+                startActivity(Intent(this, IntroActivity::class.java))
+            }
+            !termosAceitos -> {
+                startActivity(Intent(this, TermsActivity::class.java))
+            }
+            else -> {
+                startActivity(Intent(this, MainActivity::class.java))
+            }
         }
 
         finish() // Fecha a LauncherActivity

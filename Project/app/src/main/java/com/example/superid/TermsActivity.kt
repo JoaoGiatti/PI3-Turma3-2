@@ -27,13 +27,11 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.toSize
 
 class TermsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
 
         val termos = resources.openRawResource(R.raw.termos)
             .bufferedReader().use { it.readText() }
@@ -63,14 +61,12 @@ fun TermsScreen(termosText: String) {
                 .padding(bottom = 0.dp)
         )
 
-        // --- Título "Termos de Uso" ---
         Text(
             text = "Termos de Uso e Privacidade",
             color = Color.White,
-            fontSize = 20.sp,  //
+            fontSize = 20.sp,
             fontFamily = FontFamily(Font(R.font.poppinsbold)),
-            modifier = Modifier
-                .padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = 16.dp)
         )
 
         val scrollState = rememberScrollState()
@@ -176,7 +172,6 @@ fun TermsScreen(termosText: String) {
             }
         }
 
-
         Text(
             text = "Ao continuar, você concorda com os Termos de Uso e com a nossa política de privacidade.",
             color = Color.Gray,
@@ -210,14 +205,7 @@ fun TermsScreen(termosText: String) {
                 color = Color.Black,
                 fontSize = 16.sp,
                 fontFamily = FontFamily(Font(R.font.interbold))
-
             )
         }
     }
 }
-
-
-
-
-
-
