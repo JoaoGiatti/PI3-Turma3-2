@@ -45,6 +45,7 @@ fun TermsScreen(termosText: String) {
     val scrollState = rememberScrollState()
     var containerHeightPx by remember { mutableStateOf(0) }
     val context = LocalContext.current
+    val isDarkTheme = isSystemInDarkTheme()
 
     Column(
         modifier = Modifier
@@ -54,8 +55,13 @@ fun TermsScreen(termosText: String) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
+        val imageResLogo = if (isDarkTheme) {
+            R.drawable.superidlogowhiteyellow  // logo para fundo escuro
+        } else {
+            R.drawable.superidlogoblackyellow  // logo para fundo claro
+        }
         Image(
-            painter = painterResource(id = R.drawable.superidlogowhiteyellow),
+            painter = painterResource(id = imageResLogo),
             contentDescription = "Logo SuperID",
             modifier = Modifier
                 .size(100.dp)
@@ -73,9 +79,14 @@ fun TermsScreen(termosText: String) {
                 .fillMaxWidth(0.9f)
                 .fillMaxHeight(0.70f)
         ) {
+            val colorResBox = if (isDarkTheme) {
+                Color(0xFF3D3D3D) // para tema escuro
+            } else {
+                Color(0xFFC4C4C4) // para tema claro
+            }
             Surface(
                 modifier = Modifier.matchParentSize(),
-                color = MaterialTheme.colorScheme.surfaceVariant,
+                color = colorResBox,
                 shape = RoundedCornerShape(16.dp),
                 tonalElevation = 4.dp
             ) {
@@ -132,12 +143,16 @@ fun TermsScreen(termosText: String) {
                             }
                         }
                     }
-
+                    val colorRes = if (isDarkTheme) {
+                        Color(0xFF3D3D3D) // para tema escuro
+                    } else {
+                        Color(0xFFABABAB) // para tema claro
+                    }
                     Box(
                         modifier = Modifier
                             .fillMaxHeight()
                             .width(8.dp)
-                            .background(Color(0xFF555555), shape = RoundedCornerShape(4.dp))
+                            .background(colorRes, shape = RoundedCornerShape(4.dp))
                             .onGloballyPositioned { coordinates ->
                                 containerHeightPx = coordinates.size.height
                             }

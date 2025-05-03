@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -51,6 +52,8 @@ fun LogInScreen() {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
+    val isDarkTheme = isSystemInDarkTheme()
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = colors.background
@@ -67,16 +70,28 @@ fun LogInScreen() {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
+                val imageResArrow = if (isDarkTheme) {
+                    R.drawable.arrowback  // logo para fundo escuro
+                } else {
+                    R.drawable.arrowbackblack  // logo para fundo claro
+                }
                 Image(
-                    painter = painterResource(id = R.drawable.arrowback),
+                    painter = painterResource(id = imageResArrow),
                     contentDescription = "Voltar",
                     modifier = Modifier
                         .size(36.dp)
                         .clickable { (context as? ComponentActivity)?.finish() }
                 )
                 Spacer(modifier = Modifier.width(72.dp))
+
+
+                val imageResLogo = if (isDarkTheme) {
+                    R.drawable.superidlogowhiteyellow  // logo para fundo escuro
+                } else {
+                    R.drawable.superidlogoblackyellow  // logo para fundo claro
+                }
                 Image(
-                    painter = painterResource(id = R.drawable.superidlogowhiteyellow),
+                    painter = painterResource(id = imageResLogo),
                     contentDescription = "Logo SuperID",
                     modifier = Modifier.height(24.dp)
                 )

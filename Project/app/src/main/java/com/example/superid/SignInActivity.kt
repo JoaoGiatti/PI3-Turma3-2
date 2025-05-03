@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -58,6 +59,7 @@ fun SignInScreen() {
     val context = LocalContext.current
     val auth = FirebaseAuth.getInstance()
     val firestore = FirebaseFirestore.getInstance()
+    val isDarkTheme = isSystemInDarkTheme()
 
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -89,16 +91,26 @@ fun SignInScreen() {
             Spacer(modifier = Modifier.height(10.dp))
 
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                val imageResArrow = if (isDarkTheme) {
+                    R.drawable.arrowback  // logo para fundo escuro
+                } else {
+                    R.drawable.arrowbackblack  // logo para fundo claro
+                }
                 Image(
-                    painter = painterResource(id = R.drawable.arrowback),
+                    painter = painterResource(id = imageResArrow),
                     contentDescription = "Voltar",
                     modifier = Modifier
                         .size(38.dp)
                         .clickable { (context as? ComponentActivity)?.finish() }
                 )
                 Spacer(modifier = Modifier.width(72.dp))
+                val imageResLogo = if (isDarkTheme) {
+                    R.drawable.superidlogowhiteyellow  // logo para fundo escuro
+                } else {
+                    R.drawable.superidlogoblackyellow  // logo para fundo claro
+                }
                 Image(
-                    painter = painterResource(id = R.drawable.superidlogowhiteyellow),
+                    painter = painterResource(id = imageResLogo),
                     contentDescription = "Logo SuperID",
                     modifier = Modifier.height(24.dp)
                 )

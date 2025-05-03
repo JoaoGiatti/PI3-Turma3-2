@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -38,6 +39,7 @@ fun EmailVerificationScreen() {
     val user = auth.currentUser
     var emailVerified by remember { mutableStateOf(user?.isEmailVerified ?: false) }
     var showAlertDialog by remember { mutableStateOf(false) }
+    val isDarkTheme = isSystemInDarkTheme()
 
     fun verifyEmail() {
         user?.reload()?.addOnCompleteListener { task ->
@@ -109,8 +111,14 @@ fun EmailVerificationScreen() {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Spacer(modifier = Modifier.width(24.dp))
+
+                val imageResArrow = if (isDarkTheme) {
+                    R.drawable.arrowback  // logo para fundo escuro
+                } else {
+                    R.drawable.arrowbackblack  // logo para fundo claro
+                }
                 Image(
-                    painter = painterResource(id = R.drawable.arrowback),
+                    painter = painterResource(id = imageResArrow),
                     contentDescription = "Voltar",
                     modifier = Modifier
                         .size(36.dp)
@@ -119,8 +127,14 @@ fun EmailVerificationScreen() {
                         }
                 )
                 Spacer(modifier = Modifier.width(72.dp))
+
+                val imageResLogo = if (isDarkTheme) {
+                    R.drawable.superidlogowhiteyellow  // logo para fundo escuro
+                } else {
+                    R.drawable.superidlogoblackyellow  // logo para fundo claro
+                }
                 Image(
-                    painter = painterResource(id = R.drawable.superidlogowhiteyellow),
+                    painter = painterResource(id = imageResLogo),
                     contentDescription = "Logo SuperID",
                     modifier = Modifier.height(24.dp)
                 )

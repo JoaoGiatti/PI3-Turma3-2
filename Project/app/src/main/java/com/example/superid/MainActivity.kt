@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -39,6 +40,7 @@ fun SuperIDScreen() {
     val context = LocalContext.current
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
+    val isDarkTheme = isSystemInDarkTheme()
 
     Column(
         modifier = Modifier
@@ -47,8 +49,15 @@ fun SuperIDScreen() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
+
+        val imageRes = if (isDarkTheme) {
+            R.drawable.superidlogowhiteyellow  // logo para fundo escuro
+        } else {
+            R.drawable.superidlogoblackyellow  // logo para fundo claro
+        }
         Image(
-            painter = painterResource(id = R.drawable.superidlogowhiteyellow),
+            painter = painterResource(id = imageRes),
             contentDescription = "Logo SuperID",
             modifier = Modifier
                 .height(24.dp)

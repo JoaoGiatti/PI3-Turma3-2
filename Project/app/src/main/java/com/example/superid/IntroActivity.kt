@@ -8,6 +8,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -42,6 +43,7 @@ fun IntroScreen() {
     val scope = rememberCoroutineScope()
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
+    val isDarkTheme = isSystemInDarkTheme()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -61,8 +63,13 @@ fun IntroScreen() {
                     .padding(horizontal = 16.dp)
                     .padding(top = 52.dp)
             ) {
+                val imageResArrow = if (isDarkTheme) {
+                    R.drawable.arrowback  // logo para fundo escuro
+                } else {
+                    R.drawable.arrowbackblack  // logo para fundo claro
+                }
                 Image(
-                    painter = painterResource(id = R.drawable.arrowback),
+                    painter = painterResource(id = imageResArrow),
                     contentDescription = "Voltar",
                     modifier = Modifier
                         .size(36.dp)
@@ -71,8 +78,13 @@ fun IntroScreen() {
 
                 Spacer(modifier = Modifier.weight(1f))
 
+                val imageResLogo = if (isDarkTheme) {
+                    R.drawable.superidlogowhiteyellow  // logo para fundo escuro
+                } else {
+                    R.drawable.superidlogoblackyellow  // logo para fundo claro
+                }
                 Image(
-                    painter = painterResource(id = R.drawable.superidlogowhiteyellow),
+                    painter = painterResource(id = imageResLogo),
                     contentDescription = "Logo SuperID",
                     modifier = Modifier.height(24.dp)
                 )
