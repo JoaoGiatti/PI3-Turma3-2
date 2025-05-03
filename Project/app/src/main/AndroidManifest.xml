@@ -10,13 +10,13 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.SuperId"
+        android:theme="@style/Theme.SuperID"
         tools:targetApi="31">
 
         <activity
             android:name=".LauncherActivity"
             android:exported="true"
-            android:theme="@style/Theme.SuperId">
+            android:theme="@style/Theme.SuperID">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -27,34 +27,39 @@
             android:name=".IntroActivity"
             android:exported="false"
             android:label="@string/app_name"
-            android:theme="@style/Theme.SuperId" />
+            android:theme="@style/Theme.SuperID" />
 
         <activity
             android:name=".TermsActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.SuperID" />
 
         <activity
             android:name=".EmailVerificationActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.SuperID" />
 
         <activity
             android:name=".MainActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.SuperID" />
 
         <activity
             android:name=".HomeActivity"
-            android:exported="false" />
-
+            android:exported="false"
+            android:theme="@style/Theme.SuperID" />
 
         <activity
             android:name=".SignInActivity"
-            android:windowSoftInputMode="adjustResize">
-        </activity>
-
+            android:exported="false"
+            android:theme="@style/Theme.SuperID"
+            android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".LogInActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.SuperID" />
+
     </application>
 
 </manifest>
