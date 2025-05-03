@@ -1,6 +1,5 @@
 package com.example.superid
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -17,46 +16,36 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.example.superid.ui.theme.SuperIDTheme
 import kotlinx.coroutines.launch
 
 class IntroActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            IntroScreen()
+            SuperIDTheme {
+                IntroScreen()
+            }
         }
     }
 }
 
-@Preview
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun IntroScreen() {
     val context = LocalContext.current
-    val yellow = Color(0xFFE2DA06)
-    val darkGray = Color(0xFF131313)
-    val darkGrayLigher = Color(0xFF161616)
-    val textWhite = Color(0xFFFFFFFF)
-    val textGray = Color(0xFFAFAFAF)
-
-    val pagerState = rememberPagerState(
-        initialPage = 0,
-        pageCount = { 4 }
-    )
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { 4 })
     val scope = rememberCoroutineScope()
+    val colors = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = darkGrayLigher
+        color = colors.background
     ) {
         Column(
             modifier = Modifier
@@ -77,9 +66,7 @@ fun IntroScreen() {
                     contentDescription = "Voltar",
                     modifier = Modifier
                         .size(36.dp)
-                        .clickable {
-                            (context as? ComponentActivity)?.finish()
-                        }
+                        .clickable { (context as? ComponentActivity)?.finish() }
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -87,8 +74,7 @@ fun IntroScreen() {
                 Image(
                     painter = painterResource(id = R.drawable.superidlogowhiteyellow),
                     contentDescription = "Logo SuperID",
-                    modifier = Modifier
-                        .height(24.dp)
+                    modifier = Modifier.height(24.dp)
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -130,13 +116,12 @@ fun IntroScreen() {
                             3 -> "Vamos Começar!"
                             else -> ""
                         },
-                        fontSize = 24.sp,
+                        style = typography.titleLarge,
                         modifier = Modifier
-                            .padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
                             .fillMaxWidth(),
-                        fontFamily = FontFamily(Font(R.font.poppinsbold)),
                         textAlign = TextAlign.Left,
-                        color = textWhite
+                        color = colors.onBackground
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -145,16 +130,15 @@ fun IntroScreen() {
                         text = when (page) {
                             0 -> "Armazene todas as suas senhas com segurança em um só lugar, protegidas por criptografia avançada."
                             1 -> "Realize o login em sites e aplicativos sem precisar lembrar daquela senha difícil! Escaneie um QRCode, e voilà!"
-                            2 -> "Organize suas senhas como quiser! Categoriz por sites, apps ou qualquer outra forma que te faça sentido"
-                            3 -> "Agora que você já conhece o SuperID, vamos começçar com a configuração da sua conta!"
+                            2 -> "Organize suas senhas como quiser! Categorize por sites, apps ou qualquer outra forma que te faça sentido."
+                            3 -> "Agora que você já conhece o SuperID, vamos começar com a configuração da sua conta!"
                             else -> ""
                         },
-                        fontSize = 18.sp,
-                        color = textGray,
+                        style = typography.bodyLarge,
+                        color = colors.onSurfaceVariant,
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
-                            .wrapContentHeight(),
-                        fontFamily = FontFamily(Font(R.font.interregular))
+                            .wrapContentHeight()
                     )
                 }
             }
@@ -167,12 +151,13 @@ fun IntroScreen() {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 repeat(4) { index ->
-                    val color = if (pagerState.currentPage == index) yellow else textGray
+                    val dotColor = if (pagerState.currentPage == index)
+                        colors.primary else colors.onSurfaceVariant.copy(alpha = 0.5f)
                     Box(
                         modifier = Modifier
                             .padding(4.dp)
                             .size(10.dp)
-                            .background(color, shape = RoundedCornerShape(50))
+                            .background(dotColor, shape = RoundedCornerShape(50))
                     )
                 }
             }
@@ -186,32 +171,20 @@ fun IntroScreen() {
                             pagerState.animateScrollToPage(pagerState.currentPage + 1)
                         }
                     } else {
-                        val sharedPref = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-                        sharedPref.edit().putBoolean("tutorial_visto", true).apply()
-
-                        val termosAceitos = sharedPref.getBoolean("termos_aceitos", false)
-                        val nextActivity = if (termosAceitos) {
-                            MainActivity::class.java
-                        } else {
-                            TermsActivity::class.java
-                        }
-
-                        val intent = Intent(context, nextActivity)
+                        val intent = Intent(context, TermsActivity::class.java)
                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                         context.startActivity(intent)
-
                         (context as? ComponentActivity)?.finish()
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = yellow),
+                colors = ButtonDefaults.buttonColors(containerColor = colors.primary),
                 shape = RoundedCornerShape(50.dp)
             ) {
                 Text(
                     text = if (pagerState.currentPage < 3) "Continuar" else "Começar",
-                    fontSize = 18.sp,
-                    fontFamily = FontFamily(Font(R.font.interbold)),
-                    color = darkGray
+                    style = typography.labelMedium,
+                    color = colors.onPrimary
                 )
             }
         }

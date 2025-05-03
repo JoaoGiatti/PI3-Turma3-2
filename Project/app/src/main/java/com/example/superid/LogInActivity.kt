@@ -5,38 +5,33 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.Image
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import com.google.firebase.auth.FirebaseAuth
-
-
+import com.example.superid.ui.theme.SuperIDTheme
+import com.google.firebase.FirebaseNetworkException
+import com.google.firebase.auth.*
 
 class LogInActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            LogInScreen()
+            SuperIDTheme {
+                LogInScreen()
+            }
         }
     }
 }
@@ -45,19 +40,20 @@ class LogInActivity : ComponentActivity() {
 fun LogInScreen() {
     val context = LocalContext.current
     val auth = FirebaseAuth.getInstance()
+
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
-    val yellow = Color(0xFFE2DA06)
-    val darkGray = Color(0xFF131313)
-    val textWhite = Color(0xFFFFFFFF)
-    val textGray = Color(0xFFAFAFAF)
+    var emailError by remember { mutableStateOf(false) }
+    var passwordError by remember { mutableStateOf(false) }
+
+    val colors = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = darkGray,
-
+        color = colors.background
     ) {
         Column(
             modifier = Modifier
@@ -65,144 +61,198 @@ fun LogInScreen() {
                 .padding(50.dp),
             verticalArrangement = Arrangement.Top
         ) {
-            // Ícone de voltar
-            Spacer(modifier = Modifier.padding(10.dp))
+            Spacer(modifier = Modifier.height(10.dp))
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
+                modifier = Modifier.fillMaxWidth()
             ) {
-
                 Image(
                     painter = painterResource(id = R.drawable.arrowback),
                     contentDescription = "Voltar",
                     modifier = Modifier
                         .size(36.dp)
-                        .clickable {
-                            (context as? ComponentActivity)?.finish()
-                        }
+                        .clickable { (context as? ComponentActivity)?.finish() }
                 )
                 Spacer(modifier = Modifier.width(72.dp))
                 Image(
                     painter = painterResource(id = R.drawable.superidlogowhiteyellow),
                     contentDescription = "Logo SuperID",
-                    modifier = Modifier
-                        .height(24.dp) // ajusta o tamanho se quiser
+                    modifier = Modifier.height(24.dp)
                 )
             }
 
             Spacer(modifier = Modifier.height(72.dp))
 
-
             Text(
                 text = "Vamos fazer seu login",
-                color = textWhite,
-                fontSize = 18.sp,
-                fontFamily = FontFamily(Font(R.font.interregular))
+                color = colors.onBackground,
+                style = typography.bodyLarge
             )
+
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
                 text = "Sentimos sua falta!",
-                color = textWhite,
-                fontSize = 24.sp,
-                fontFamily = FontFamily(Font(R.font.poppinsbold))
+                color = colors.onBackground,
+                style = typography.titleLarge
             )
 
             Spacer(modifier = Modifier.height(60.dp))
 
-            // Campo de email
-            Text(text = "Seu Email Mestre:", color = textWhite, fontFamily = FontFamily(Font(R.font.interbold)))
+            Text(
+                text = "Seu Email Mestre:",
+                color = colors.onBackground,
+                style = typography.labelMedium
+            )
             Spacer(modifier = Modifier.height(10.dp))
+
             OutlinedTextField(
                 value = email,
-                onValueChange = { email = it },
-                placeholder = { Text("email.abc@gmail.com", color = textGray, fontFamily = FontFamily(Font(R.font.interbold))) },
+                onValueChange = {
+                    email = it
+                    if (emailError) emailError = false
+                },
+                isError = emailError,
+                supportingText = {
+                    if (emailError) Text("O campo de e-mail é obrigatório", color = MaterialTheme.colorScheme.error)
+                },
+                placeholder = {
+                    Text(
+                        "email.abc@gmail.com",
+                        color = colors.outline,
+                        style = typography.labelMedium
+                    )
+                },
                 colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = yellow,
-                    focusedBorderColor = yellow,
-                    unfocusedTextColor = textWhite,
-                    focusedTextColor = textWhite,
-                    cursorColor = yellow
+                    unfocusedBorderColor = colors.primary,
+                    focusedBorderColor = colors.primary,
+                    unfocusedTextColor = colors.onBackground,
+                    focusedTextColor = colors.onBackground,
+                    cursorColor = colors.primary,
+                    errorBorderColor = MaterialTheme.colorScheme.error,
+                    errorCursorColor = MaterialTheme.colorScheme.error,
+                    errorTextColor = MaterialTheme.colorScheme.error
                 ),
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(18.dp))
 
-            // Campo de senha
-            Text(text = "Sua Senha Mestre:", color = textWhite, fontFamily = FontFamily(Font(R.font.interbold)))
+            Text(
+                text = "Sua Senha Mestre:",
+                color = colors.onBackground,
+                style = typography.labelMedium
+            )
             Spacer(modifier = Modifier.height(10.dp))
+
             OutlinedTextField(
                 value = password,
-                onValueChange = { password = it },
-                placeholder = { Text("***********", color = textGray, fontFamily = FontFamily(Font(R.font.interbold))) },
+                onValueChange = {
+                    password = it
+                    if (passwordError) passwordError = false
+                },
+                isError = passwordError,
+                supportingText = {
+                    if (passwordError) Text("O campo de senha é obrigatório", color = MaterialTheme.colorScheme.error)
+                },
+                placeholder = {
+                    Text(
+                        "***********",
+                        color = colors.outline,
+                        style = typography.labelMedium
+                    )
+                },
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
-                    val icon = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(icon, contentDescription = null, tint = yellow)
+                        Icon(
+                            imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                            contentDescription = null,
+                            tint = colors.primary
+                        )
                     }
                 },
                 colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = yellow,
-                    focusedBorderColor = yellow,
-                    unfocusedTextColor = textWhite,
-                    focusedTextColor = textWhite,
-                    cursorColor = yellow
+                    unfocusedBorderColor = colors.primary,
+                    focusedBorderColor = colors.primary,
+                    unfocusedTextColor = colors.onBackground,
+                    focusedTextColor = colors.onBackground,
+                    cursorColor = colors.primary,
+                    errorBorderColor = MaterialTheme.colorScheme.error,
+                    errorCursorColor = MaterialTheme.colorScheme.error,
+                    errorTextColor = MaterialTheme.colorScheme.error
                 ),
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Esqueceu a senha
             Text(
                 text = "Esqueceu a senha?",
-                color = textWhite,
-                fontFamily = FontFamily(Font(R.font.interregular)),
+                color = colors.onBackground,
+                style = typography.labelMedium,
                 modifier = Modifier.align(Alignment.End)
             )
 
             Spacer(modifier = Modifier.height(34.dp))
 
-            // Botão de Entrar
             Button(
                 onClick = {
-                    // Lógica de autenticação
-                    if (email.isNotBlank() && password.isNotBlank()) {
+                    var valid = true
+                    if (email.isBlank()) {
+                        emailError = true
+                        valid = false
+                    }
+                    if (password.isBlank()) {
+                        passwordError = true
+                        valid = false
+                    }
+
+                    if (valid) {
                         auth.signInWithEmailAndPassword(email, password)
-                            .addOnCompleteListener {
-                                if (it.isSuccessful) {
+                            .addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
                                     context.startActivity(Intent(context, HomeActivity::class.java))
                                 } else {
-                                    Toast.makeText(context, "Falha ao fazer login", Toast.LENGTH_SHORT).show()
+                                    val message = when (val e = task.exception) {
+                                        is FirebaseAuthInvalidCredentialsException,
+                                        is FirebaseAuthInvalidUserException -> "Email ou senha inválidos."
+                                        is FirebaseNetworkException -> "Sem conexão com a internet."
+                                        else -> "Erro ao fazer login. Tente novamente."
+                                    }
+                                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                                 }
                             }
-                    } else{
-                        Toast.makeText(context, "Preencha todos os campos", Toast.LENGTH_SHORT).show()
                     }
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = yellow),
+                colors = ButtonDefaults.buttonColors(containerColor = colors.primary),
+                shape = RoundedCornerShape(30.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(30.dp)
+                    .height(56.dp)
             ) {
-                Text("Entrar", color = Color.Black, fontFamily = FontFamily(Font(R.font.interbold)))
+                Text(
+                    text = "Entrar",
+                    color = colors.onPrimary,
+                    style = typography.labelMedium
+                )
             }
 
             Spacer(modifier = Modifier.height(64.dp))
 
-            // Cadastro
             Row(
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
-                Text("Não tem uma conta? ", color = textWhite, fontFamily = FontFamily(Font(R.font.interbold)))
                 Text(
-                    "Cadastre-se",
-                    color = textGray,
-                    fontFamily = FontFamily(Font(R.font.interbold)),
+                    text = "Não tem uma conta? ",
+                    color = colors.onBackground,
+                    style = typography.labelMedium
+                )
+                Text(
+                    text = "Cadastre-se",
+                    color = colors.secondary,
+                    style = typography.labelMedium,
                     modifier = Modifier.clickable {
                         context.startActivity(Intent(context, SignInActivity::class.java))
                     }
@@ -210,18 +260,14 @@ fun LogInScreen() {
             }
 
             Spacer(modifier = Modifier.height(32.dp))
-
-            Divider(color = yellow, thickness = 1.dp)
-
+            Divider(color = colors.primary, thickness = 1.dp)
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = "Ao continuar você concorda com os Termos de Serviço\n" +
-                        "e Política de Privacidade da Nome",
-                color = textGray,
-                fontSize = 12.sp,
-                fontFamily = FontFamily(Font(R.font.intermedium)),
-                modifier = Modifier.align(Alignment.CenterHorizontally),
+                text = "Ao continuar você concorda com os Termos de Serviço e Política de Privacidade ",
+                color = colors.outline,
+                style = typography.labelSmall,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
         }
     }
