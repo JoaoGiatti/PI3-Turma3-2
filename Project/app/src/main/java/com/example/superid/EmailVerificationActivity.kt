@@ -66,9 +66,14 @@ fun EmailVerificationScreen() {
     }
 
     if (showAlertDialog) {
+        val colorRes = if (isDarkTheme) {
+            Color(0xFF323232) // para tema escuro
+        } else {
+            Color(0xFFECECEC) // para tema claro
+        }
         AlertDialog(
             onDismissRequest = { showAlertDialog = false },
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            containerColor = colorRes,
             title = {
                 Text("Atenção!", color = MaterialTheme.colorScheme.primary)
             },
