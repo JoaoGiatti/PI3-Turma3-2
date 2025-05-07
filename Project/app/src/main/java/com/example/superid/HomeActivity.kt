@@ -24,6 +24,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.superid.ui.theme.SuperIDTheme
 import androidx.compose.ui.graphics.Color
+import com.example.superid.homepages.PasswordPage
+import com.example.superid.homepages.ProfilePage
+import com.example.superid.homepages.ScanPage
 
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -74,11 +77,15 @@ fun HomeScreen(modifier: Modifier = Modifier) {
             }
         }
     ) { innerPadding ->
-        ContentScreen(modifier = Modifier.padding(innerPadding))
+        ContentScreen(modifier = Modifier.padding(innerPadding), selectedIndex)
     }
 }
 
 @Composable
-fun ContentScreen(modifier: Modifier = Modifier){
-
+fun ContentScreen(modifier: Modifier = Modifier, selectedIndex: Int){
+    when(selectedIndex){
+        0-> PasswordPage()
+        1-> ScanPage()
+        2-> ProfilePage()
+    }
 }
