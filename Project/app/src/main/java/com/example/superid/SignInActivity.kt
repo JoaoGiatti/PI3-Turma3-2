@@ -246,7 +246,7 @@ fun SignInScreen() {
                                         "senhaMestre" to encryptedPassword
                                     )
 
-                                    firestore.collection("Users")
+                                    firestore.collection("users_data")
                                         .document(uid)
                                         .set(userData)
                                         .addOnSuccessListener {
