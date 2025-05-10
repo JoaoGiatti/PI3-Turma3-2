@@ -3,30 +3,25 @@ package com.example.superid
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.*
 import com.example.superid.ui.theme.SuperIDTheme
-import androidx.compose.ui.graphics.Color
 import com.example.superid.homepages.PasswordPage
 import com.example.superid.homepages.ProfilePage
 import com.example.superid.homepages.ScanPage
+import com.example.superid.R
+import com.example.superid.homepages.AddPasswordScreen
+
+// Agora, vamos garantir que a classe 'NavItem' tenha um nome único.
+data class NavItemData(val label: String, val icon: Int)
 
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,11 +36,12 @@ class HomeActivity : ComponentActivity() {
 
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier) {
+    val navController = rememberNavController()
 
     val navItemList = listOf(
-        NavItem("Senhas", R.drawable.keyicon),
-        NavItem("Escanear", R.drawable.scanicon),
-        NavItem("perfil", R.drawable.profileicon)
+        NavItemData("Senhas", R.drawable.keyicon),
+        NavItemData("Escanear", R.drawable.scanicon),
+        NavItemData("perfil", R.drawable.profileicon)
     )
 
     var selectedIndex by remember { mutableStateOf(0) }
@@ -62,11 +58,13 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                         onClick = {
                             selectedIndex = index
                         },
-                        icon =  { Icon(
-                            painter = painterResource(id = navItem.icon),
-                            contentDescription = navItem.label,
-                            modifier = Modifier.size(30.dp)
-                        )},
+                        icon = {
+                            Icon(
+                                painter = painterResource(id = navItem.icon),
+                                contentDescription = navItem.label,
+                                modifier = Modifier.size(30.dp)
+                            )
+                        },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = Color(0xFFF4EB00),
                             unselectedIconColor = Color.Gray,
@@ -77,15 +75,44 @@ fun HomeScreen(modifier: Modifier = Modifier) {
             }
         }
     ) { innerPadding ->
-        ContentScreen(modifier = Modifier.padding(innerPadding), selectedIndex)
+        ContentScreen(
+            modifier = Modifier.padding(innerPadding),
+            selectedIndex = selectedIndex,
+            navController = navController
+        )
     }
 }
 
 @Composable
-fun ContentScreen(modifier: Modifier = Modifier, selectedIndex: Int){
-    when(selectedIndex){
-        0-> PasswordPage()
-        1-> ScanPage()
-        2-> ProfilePage()
+fun ContentScreen(
+    modifier: Modifier = Modifier,
+    selectedIndex: Int,
+    navController: NavController
+) {
+    // Usando o NavHostController para navegar corretamente
+    when (selectedIndex) {
+        0 -> {
+            // Usando o NavHostController para navegação
+            NavHost(
+                navController = navController as NavHostController,
+                startDestination = Routes.PasswordList,
+                modifier = modifier
+            ) {
+                // Definindo as rotas
+                composable(Routes.PasswordList) {
+                    PasswordPage(navController = navController) // Passando o navController
+                }
+                composable(Routes.AddPassword) {
+                    AddPasswordScreen(navController = navController) // Passando o navController
+                }
+            }
+        }
+        1 -> ScanPage() // Página de escanear
+        2 -> ProfilePage() // Página de perfil
     }
+}
+
+object Routes {
+    const val PasswordList = "passwordList"
+    const val AddPassword = "addPassword"
 }

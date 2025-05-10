@@ -12,54 +12,52 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SuperID"
         tools:targetApi="31">
-
+        <activity
+            android:name=".homepages.PasswordRepository"
+            android:exported="false" />
+        <activity
+            android:name=".homepages.AddPasswordScreen"
+            android:exported="false" />
         <activity
             android:name=".LauncherActivity"
             android:exported="true"
             android:theme="@style/Theme.SuperID">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".IntroActivity"
             android:exported="false"
             android:label="@string/app_name"
             android:theme="@style/Theme.SuperID" />
-
         <activity
             android:name=".TermsActivity"
             android:exported="false"
             android:theme="@style/Theme.SuperID" />
-
         <activity
             android:name=".EmailVerificationActivity"
             android:exported="false"
             android:theme="@style/Theme.SuperID" />
-
         <activity
             android:name=".MainActivity"
             android:exported="false"
             android:theme="@style/Theme.SuperID" />
-
         <activity
             android:name=".HomeActivity"
             android:exported="false"
             android:theme="@style/Theme.SuperID" />
-
         <activity
             android:name=".SignInActivity"
             android:exported="false"
             android:theme="@style/Theme.SuperID"
             android:windowSoftInputMode="adjustResize" />
-
         <activity
             android:name=".LogInActivity"
             android:exported="false"
             android:theme="@style/Theme.SuperID" />
-
     </application>
 
 </manifest>
