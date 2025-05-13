@@ -4,7 +4,7 @@ import com.example.superid.model.PasswordItem
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
-class PasswordRepository {
+class   PasswordRepository {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
