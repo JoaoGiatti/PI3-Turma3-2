@@ -116,4 +116,12 @@ dependencies {
     implementation ("com.google.accompanist:accompanist-pager-indicators:0.34.0")
 
     implementation ("com.google.accompanist:accompanist-pager-indicators:0.32.0")
+
+    // CameraX
+    implementation ("androidx.camera:camera-camera2:1.3.4")
+    implementation ("androidx.camera:camera-lifecycle:1.3.4")
+    implementation ("androidx.camera:camera-view:1.3.4")
+
+    //Zxing
+    implementation ("com.google.zxing:core:3.4.1")
 }
