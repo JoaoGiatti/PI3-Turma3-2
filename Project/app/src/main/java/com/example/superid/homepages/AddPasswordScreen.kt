@@ -1,5 +1,6 @@
 package com.example.superid.homepages
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -8,23 +9,28 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.superid.model.PasswordItem
-import com.example.superid.homepages.PasswordViewModel
+import kotlinx.coroutines.launch
 
 @Composable
-fun AddPasswordScreen(navController: NavController,onPasswordAdded: () -> Unit = {} // callback após salvar
+fun AddPasswordScreen(
+    navController: NavController,
+    onPasswordAdded: () -> Unit = {}
 ) {
     val viewModel: PasswordViewModel = viewModel()
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     var title by remember { mutableStateOf("") }
+    var login by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("Apps") }
-
     val categories = listOf("Apps", "Sites", "Teclado Físico", "Outros")
 
     Column(
@@ -43,6 +49,23 @@ fun AddPasswordScreen(navController: NavController,onPasswordAdded: () -> Unit =
             value = title,
             onValueChange = { title = it },
             label = { Text("Título") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                textColor = Color.White,
+                focusedBorderColor = Color.Yellow,
+                unfocusedBorderColor = Color.Gray,
+                focusedLabelColor = Color.Yellow,
+                unfocusedLabelColor = Color.Gray
+            )
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+            value = login,
+            onValueChange = { login = it },
+            label = { Text("Login") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -86,12 +109,21 @@ fun AddPasswordScreen(navController: NavController,onPasswordAdded: () -> Unit =
             onClick = {
                 val item = PasswordItem(
                     title = title,
+                    login = login,
                     password = password,
                     category = selectedCategory
                 )
-                viewModel.addPassword(item)
-                onPasswordAdded()
-
+                coroutineScope.launch {
+                    try {
+                        viewModel.addPassword(item)
+                        onPasswordAdded()
+                        title = ""
+                        login = ""
+                        password = ""
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "Erro ao salvar: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
             },
             colors = ButtonDefaults.buttonColors(backgroundColor = Color.Yellow)
         ) {

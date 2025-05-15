@@ -1,8 +1,12 @@
+// Arquivo: PasswordItem.kt
 package com.example.superid.model
 
 data class PasswordItem(
-    val id: String = "",
+    var id: String = "",
     val title: String = "",
     val password: String = "",
-    val category: String = ""
-)
+    val category: String = "",
+    val login: String = ""  // Novo campo
+) {
+    constructor() : this("", "", "", "", "")
+}

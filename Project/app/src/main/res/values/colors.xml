@@ -13,5 +13,6 @@
     <color name="gold_yellow">#E2DA06</color>
     <color name="dark_gray">#FF131313</color>
     <color name="light_gray">#AFAFAF</color>
-    <color name="error_red">#D32F2F</color>
+    <color name="error_red">@color/red</color>
+    <color name="red">#FF3F42</color>
 </resources>

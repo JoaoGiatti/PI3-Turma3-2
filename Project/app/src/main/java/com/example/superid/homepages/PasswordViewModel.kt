@@ -2,70 +2,83 @@ package com.example.superid.homepages
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.superid.model.PasswordItem
-import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.firestore
+import com.example.superid.repository.PasswordRepository
+import kotlinx.coroutines.launch
 
 class PasswordViewModel : ViewModel() {
+    private val repository = PasswordRepository()
     private val _passwords = mutableStateListOf<PasswordItem>()
     val passwords: List<PasswordItem> = _passwords
+    private val defaultCategories = listOf("Sites Web", "Aplicativos", "Teclados de Acesso Físico")
 
-    private var snapshotListener: ListenerRegistration? = null
+    private val _categories = mutableStateListOf<String>()
+    val categories: List<String> = _categories
 
     init {
-        fetchPasswords()
+        loadPasswords()
+        loadCategories()
     }
 
-    // Função para buscar as senhas no Firestore
-    private fun fetchPasswords() {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-
-        snapshotListener = FirebaseFirestore.getInstance()
-            .collection("user_passwords")
-            .document(userId)
-            .collection("passwords")
-            .addSnapshotListener { snapshot, e ->
-                if (e != null || snapshot == null) {
-                    // Caso haja erro ou snapshot vazio, não faz nada
-                    return@addSnapshotListener
-                }
-
-                // Limpa a lista de senhas antes de adicionar as novas
+    private fun loadPasswords() {
+        viewModelScope.launch {
+            try {
                 _passwords.clear()
+                _passwords.addAll(repository.getPasswords())
+            } catch (e: Exception) {}
+        }
+    }
 
-                // Itera sobre os documentos retornados e adiciona à lista
-                for (doc in snapshot.documents) {
-                    val item = doc.toObject(PasswordItem::class.java)?.copy(id = doc.id)
-                    item?.let { _passwords.add(it) }
-                }
+    private fun loadCategories() {
+        viewModelScope.launch {
+            try {
+                val userCategories = repository.getCategories()
+                _categories.clear()
+                _categories.addAll(defaultCategories)
+                _categories.addAll(userCategories.filter {
+                    !defaultCategories.contains(it)
+                })
+            } catch (e: Exception) {
+                _categories.clear()
+                _categories.addAll(defaultCategories)
             }
+        }
     }
 
-    // Função para adicionar uma senha ao Firestore
-    fun addPassword(item: PasswordItem) {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        FirebaseFirestore.getInstance()
-            .collection("user_passwords")
-            .document(userId)
-            .collection("passwords")
-            .add(item)
-    }
-    fun deletePassword(passwordItem: PasswordItem) {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        Firebase.firestore.collection("user_passwords")
-            .document(userId)
-            .collection("passwords")
-            .document(passwordItem.id)
-            .delete()
+    suspend fun addPassword(item: PasswordItem) {
+        try {
+            val id = repository.addPassword(item)
+            _passwords.add(item.copy(id = id))
+        } catch (e: Exception) { throw e }
     }
 
+    suspend fun updatePassword(item: PasswordItem) {
+        try {
+            repository.updatePassword(item)
+            val index = _passwords.indexOfFirst { it.id == item.id }
+            if (index != -1) _passwords[index] = item
+        } catch (e: Exception) { throw e }
+    }
 
-    // Função para remover o listener quando o ViewModel for destruído
-    override fun onCleared() {
-        super.onCleared()
-        snapshotListener?.remove()
+    suspend fun deletePassword(item: PasswordItem) {
+        try {
+            repository.deletePassword(item.id)
+            _passwords.removeIf { it.id == item.id }
+        } catch (e: Exception) { throw e }
+    }
+
+    suspend fun addCategory(category: String) {
+        try {
+            repository.addCategory(category)
+            if (!_categories.contains(category)) _categories.add(category)
+        } catch (e: Exception) { throw e }
+    }
+
+    suspend fun deleteCategory(category: String) {
+        try {
+            repository.deleteCategory(category)
+            _categories.remove(category)
+        } catch (e: Exception) { throw e }
     }
 }
