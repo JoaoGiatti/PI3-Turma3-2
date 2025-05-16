@@ -1,5 +1,6 @@
 package com.example.superid.homepages
 
+import android.content.Intent
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.Image
@@ -32,6 +33,28 @@ import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import android.util.Base64
+import com.example.superid.HomeActivity
+import com.example.superid.LogInActivity
+import com.example.superid.MainActivity
+import javax.crypto.Cipher
+import javax.crypto.spec.SecretKeySpec
+import java.security.Key
+
+
+fun decryptPassword(encryptedPassword: String): String {
+    val secretKey = "1234567890123456"
+    val key: Key = SecretKeySpec(secretKey.toByteArray(), "AES")
+    val cipher = Cipher.getInstance("AES")
+    cipher.init(Cipher.DECRYPT_MODE, key)
+    val decodedBytes = Base64.decode(encryptedPassword, Base64.DEFAULT)
+    val decryptedBytes = cipher.doFinal(decodedBytes)
+    return String(decryptedBytes)
+
+}
 
 @Composable
 fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
@@ -43,6 +66,31 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
     // Estado para verificar se o e-mail está verificado
     var isEmailVerified by remember { mutableStateOf(true) }
     val coroutineScope = rememberCoroutineScope()
+
+    val decryptedPassword = remember(item.senhaMestre) {
+        try {
+            decryptPassword(item.senhaMestre)
+        } catch (e: Exception) {
+            "Erro ao descriptografar"
+        }
+    }
+
+    val auth = FirebaseAuth.getInstance()
+    var emailVerified by remember { mutableStateOf(false) }
+
+    fun resendVerificationEmail() {
+        val user = auth.currentUser
+        user?.let {
+            it.sendEmailVerification()
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Toast.makeText(context, "Email de verificação enviado!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "Erro ao enviar email de verificação.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+        }
+    }
 
     // Verificar o status de verificação do e-mail
     LaunchedEffect(Unit) {
@@ -63,24 +111,14 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
         verticalArrangement = Arrangement.Top
 
     ) {
-        // Topo: menu + logo
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
+
+        // Topo: logo
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 20.dp, horizontal = 32.dp)
+                .padding(top = 16.dp), // opcional
+            contentAlignment = Alignment.TopCenter
         ) {
-            val imageResArrow = R.drawable.menu
-            Image(
-                painter = painterResource(id = imageResArrow),
-                contentDescription = "Voltar",
-                modifier = Modifier
-                    .size(30.dp)
-                    .clickable { (context as? ComponentActivity)?.finish() }
-            )
-
-            Spacer(modifier = Modifier.width(84.dp))
-
             val imageResLogo = R.drawable.superid
             Image(
                 painter = painterResource(id = imageResLogo),
@@ -108,11 +146,11 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
                     .padding(horizontal = 16.dp)
                     .background(Color.Black)
                     .border(1.dp, Color.Red, RoundedCornerShape(4.dp))
-                    .height(40.dp),
+                    .height(50.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Alerta: valide o email para usar todas as funções",
+                    text = "Alerta: valide o email para aparecer informações do perfil",
                     color = Color.Red,
                     style = typography.subtitle2,
                     textAlign = TextAlign.Center
@@ -122,52 +160,53 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
             Spacer(modifier = Modifier.height(24.dp))
         }
 
-            // Avatar
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Image(
-                    painter = painterResource(id = R.drawable.profileicon),
-                    contentDescription = "Profile Picture",
-                    modifier = Modifier
-                        .size(100.dp)
-                        .border(3.dp, Color.White, CircleShape)
-                        .padding(3.dp)
-                        .clip(CircleShape)
-                )
-            }
+        // Avatar
+        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            Image(
+                painter = painterResource(id = R.drawable.profileicon),
+                contentDescription = "Profile Picture",
+                modifier = Modifier
+                    .size(100.dp)
+                    .border(3.dp, Color.White, CircleShape)
+                    .padding(3.dp)
+                    .clip(CircleShape)
+            )
+        }
 
-            Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-            // Nome e data
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = item.nome,
-                    color = Color.White,
-                    style = MaterialTheme.typography.h6.copy(fontWeight = FontWeight.Bold)
-                )
-                Text(
-                    text = "Entrou em 12 de Abril",
-                    color = Color.Gray,
-                    style = MaterialTheme.typography.caption
-                )
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Divisor horizontal
-            Divider(
-                color = Color.DarkGray,
-                thickness = 1.dp,
-                modifier = Modifier.padding(horizontal = 24.dp)
+        // Nome
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = item.nome,
+                color = Color.White,
+                style = MaterialTheme.typography.h6.copy(fontWeight = FontWeight.Bold)
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+        }
 
-            // Campos de informação
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                // Campo Nome
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Divisor horizontal
+        Divider(
+            color = Color.DarkGray,
+            thickness = 1.dp,
+            modifier = Modifier.padding(horizontal = 24.dp)
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Campos de informação
+        Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+            // Campo Nome
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     text = "Nome:",
                     color = Color.White,
@@ -177,93 +216,111 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
                     text = item.nome,
                     color = Color.White,
                     style = MaterialTheme.typography.body1,
-                    modifier = Modifier.padding(top = 4.dp)
+                    modifier = Modifier.padding(start = 8.dp)
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-                Divider(color = Color.DarkGray, thickness = 1.dp)
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Divider(color = Color.DarkGray, thickness = 1.dp)
 
-                // Campo Email
-                Spacer(modifier = Modifier.height(16.dp))
+            // Campo Email
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
                 Text(
                     text = "Email:",
                     color = Color.White,
                     style = MaterialTheme.typography.body2
                 )
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
+                Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
                     Text(
                         text = item.emailMestre,
                         color = Color.Gray,
                         style = MaterialTheme.typography.body1
                     )
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "Valide seu Email",
                         color = Color.Yellow,
                         style = MaterialTheme.typography.caption,
-                        modifier = Modifier.clickable { /* ação de validação */ }
+                        modifier = Modifier
+                            .clickable { resendVerificationEmail()}
                     )
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-                Divider(color = Color.DarkGray, thickness = 1.dp)
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Divider(color = Color.DarkGray, thickness = 1.dp)
 
-                // Campo Senha
-                Spacer(modifier = Modifier.height(16.dp))
+            // Campo Senha
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Estado para controlar a visibilidade da senha
+            var isPasswordVisible by remember { mutableStateOf(false) }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
                 Text(
                     text = "Senha:",
                     color = Color.White,
                     style = MaterialTheme.typography.body2
                 )
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.End
                 ) {
-                    Text(
-                        text = "••••••••",
-                        color = Color.Gray,
-                        style = MaterialTheme.typography.body1
-                    )
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = "Redefinir senha",
-                            color = Color.Yellow,
-                            style = MaterialTheme.typography.caption,
-                            modifier = Modifier.clickable { /* ação de redefinição */ }
+                            text = if (isPasswordVisible) decryptedPassword else "••••••••",
+                            color = Color.Gray,
+                            style = MaterialTheme.typography.body1
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Icon(
-                            painter = painterResource(id = R.drawable.keyicon),
-                            contentDescription = "Ícone de chave",
-                            tint = Color.Yellow,
-                            modifier = Modifier.size(18.dp)
+                            imageVector = if (isPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                            contentDescription = if (isPasswordVisible) "Ocultar senha" else "Mostrar senha",
+                            tint = Color.White,
+                            modifier = Modifier
+                                .size(20.dp)
+                                .clickable { isPasswordVisible = !isPasswordVisible }
                         )
                     }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                Divider(color = Color.DarkGray, thickness = 1.dp)
-
-                // Espaço extra para o botão não cobrir conteúdo
-                Spacer(modifier = Modifier.height(180.dp))
-
-                // Botão Sair posicionado manualmente - AGORA FUNCIONANDO
-                Button(
-                    onClick = {
-                        FirebaseAuth.getInstance().signOut()
-                        // Navegar para tela de login
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = Color(0xFFE2DA06),
-                        contentColor = Color.Black
-                    ),
-                    shape = RoundedCornerShape(50),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                ) {
-                    Text("Sair", fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Redefinir senha",
+                        color = Color.Yellow,
+                        style = MaterialTheme.typography.caption,
+                        modifier = Modifier.clickable { /* ação de redefinição */ }
+                    )
                 }
             }
+            Spacer(modifier = Modifier.height(16.dp))
+            Divider(color = Color.DarkGray, thickness = 1.dp)
+
+            // Espaço extra para o botão não cobrir conteúdo
+            Spacer(modifier = Modifier.height(70.dp))
+
+            // Botão Sair
+            Button(
+                onClick = {
+                    context.startActivity(Intent(context, MainActivity::class.java))
+                },
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = Color(0xFFE2DA06),
+                    contentColor = Color.Black
+                ),
+                shape = RoundedCornerShape(50),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                Text("Sair", fontWeight = FontWeight.Bold)
+            }
         }
+    }
 }
