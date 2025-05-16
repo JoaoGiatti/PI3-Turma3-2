@@ -71,24 +71,13 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
         verticalArrangement = Arrangement.Top
 
     ) {
-        // Topo: menu + logo
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
+        // Topo: logo
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 20.dp, horizontal = 32.dp)
+                .padding(top = 16.dp), // opcional
+            contentAlignment = Alignment.TopCenter
         ) {
-            val imageResArrow = R.drawable.menu
-            Image(
-                painter = painterResource(id = imageResArrow),
-                contentDescription = "Voltar",
-                modifier = Modifier
-                    .size(30.dp)
-                    .clickable { (context as? ComponentActivity)?.finish() }
-            )
-
-            Spacer(modifier = Modifier.width(84.dp))
-
             val imageResLogo = R.drawable.superid
             Image(
                 painter = painterResource(id = imageResLogo),
