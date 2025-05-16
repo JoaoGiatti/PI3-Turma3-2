@@ -242,13 +242,15 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
                         style = MaterialTheme.typography.body1
                     )
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Valide seu Email",
-                        color = Color.Yellow,
-                        style = MaterialTheme.typography.caption,
-                        modifier = Modifier
-                            .clickable { resendVerificationEmail()}
-                    )
+                    if (!isEmailVerified) {
+                        Text(
+                            text = "Valide seu Email",
+                            color = Color.Yellow,
+                            style = MaterialTheme.typography.caption,
+                            modifier = Modifier
+                                .clickable { resendVerificationEmail() }
+                        )
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
