@@ -37,6 +37,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import android.util.Base64
+import androidx.compose.material3.TextButton
+import com.example.superid.ForgotPasswordActivity
 import com.example.superid.HomeActivity
 import com.example.superid.LogInActivity
 import com.example.superid.MainActivity
@@ -77,6 +79,7 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
 
     val auth = FirebaseAuth.getInstance()
     var emailVerified by remember { mutableStateOf(false) }
+
 
     fun resendVerificationEmail() {
         val user = auth.currentUser
@@ -140,24 +143,47 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
 
         // Alerta de verificação de e-mail
         if (!isEmailVerified) {
+            Spacer(modifier = Modifier.height(12.dp))
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .background(Color.Black)
-                    .border(1.dp, Color.Red, RoundedCornerShape(4.dp))
-                    .height(50.dp),
-                contentAlignment = Alignment.Center
+                    .background(
+                        color = MaterialTheme.colors.error,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colors.error,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .height(40.dp)
             ) {
-                Text(
-                    text = "Alerta: valide o email para aparecer informações do perfil",
-                    color = Color.Red,
-                    style = typography.subtitle2,
-                    textAlign = TextAlign.Center
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.alert),
+                        contentDescription = "Alerta",
+                        tint = Color.White,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .padding(end = 8.dp)
+                    )
+                    Text(
+                        text = "Valide seu email para usar todas as funções",
+                        color = Color.White,
+                        style = MaterialTheme.typography.subtitle2
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
         }
 
         // Avatar
@@ -293,12 +319,21 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
                         )
                     }
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Redefinir senha",
-                        color = Color.Yellow,
-                        style = MaterialTheme.typography.caption,
-                        modifier = Modifier.clickable { /* ação de redefinição */ }
-                    )
+                    TextButton(
+                        onClick = {
+                            val intent = Intent(context, ForgotPasswordActivity::class.java).apply {
+                                putExtra("fromLogin", true) // Indica que veio do login
+                            }
+                            context.startActivity(intent)
+                        },
+
+                    ) {
+                        Text(
+                            text = "Redefinir senha",
+                            color = Color.Yellow,
+                            style = MaterialTheme.typography.caption,
+                        )
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
