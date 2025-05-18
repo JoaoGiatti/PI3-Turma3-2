@@ -203,12 +203,14 @@ fun LogInScreen() {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                text = "Esqueceu a senha?",
-                color = colors.onBackground,
-                style = typography.labelMedium,
-                modifier = Modifier.align(Alignment.End)
-            )
+            TextButton(onClick = {
+                val intent = Intent(context, ForgotPasswordActivity::class.java)
+                intent.putExtra("skip_auto_redirect", true)
+                context.startActivity(intent)
+            }) {
+                Text("Esqueceu a senha?")
+            }
+
 
             Spacer(modifier = Modifier.height(34.dp))
 
