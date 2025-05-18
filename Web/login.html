@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - FootBet</title>
+  <link rel="stylesheet" href="style_accounts.css">
+  <style>
+    .popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+      z-index: 1001;
+      width: 300px;
+      text-align: center;
+    }
+
+    .popup.show {
+      display: block;
+    }
+
+    .popup-close {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body onload="carregar()">
+  <header class="header">
+    <div class="logo">
+      <img src="images_accounts/logo.png" alt="logo" width="140" height="140">
+    </div>
+    <nav class="nav">
+      <a href="signup.html" class="event-button">Sign up</a>
+    </nav>
+  </header>
+
+  <div class="main">
+    <div class="left">
+      <h1>FAÇA LOGIN NA SUA CONTA,<br>COM SEGURANÇA E PRATICIDADE.</h1>
+      <p>Bem-vindo ao FootBet! Faça o login para acessar os melhores recursos.</p>
+    </div>
+
+    <div class="right">
+      <div class="form-box">
+        <h2>LOGIN</h2>
+        <form id="loginForm">
+          <input type="email" name="email" id="login_email" class="inputUser" placeholder="Email" required>
+          <input type="password" name="password" id="login_password" class="inputUser" placeholder="Senha" required>
+          <button type="submit">Entrar</button>
+        </form>
+        <button onclick="abrirPopup()" style="margin-top: 15px;">Entrar com SuperID</button>
+        <a href="signup.html">Não tem uma conta? Cadastrar</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="superid-popup" class="popup">
+    <span class="popup-close" onclick="fecharPopup()">&times;</span>
+    <h3>Login com SuperID</h3>
+    <p>Escaneie o QR Code com o app SuperID:</p>
+    <img id="qrcode" src="" alt="QR Code de login">
+    <div id="status">
+      <p>Aguardando autenticação...</p>
+    </div>
+  </div>  
+
+  <script>
+    const API_URL = "http://127.0.0.1:3000";
+
+    function abrirPopup() {
+      document.getElementById("superid-popup").classList.add("show");
+      gerarQRCode();
+    }
+
+    function fecharPopup() {
+      document.getElementById("superid-popup").classList.remove("show");
+    }
+
+    let loginToken = null;
+
+    async function gerarQRCode() {
+      const response = await fetch("https://us-central1-SEU_PROJETO.cloudfunctions.net/performAuth", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          apiKey: "CHAVE_DO_SITE",
+          siteUrl: "www.footbet.com"
+        })
+      });
+
+      const data = await response.json();
+      loginToken = data.loginToken;
+
+      const qrImage = document.getElementById("qrcode");
+      qrImage.src = `data:image/png;base64,${data.qrCodeBase64}`;
+
+      verificarStatusLogin();
+    }
+
+    async function verificarStatusLogin() {
+      let tentativas = 0;
+      const intervalo = setInterval(async () => {
+        const resp = await fetch("https://us-central1-SEU_PROJETO.cloudfunctions.net/getLoginStatus", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ loginToken })
+        });
+
+        const result = await resp.json();
+
+        if (result.status === "authorized") {
+          clearInterval(intervalo);
+          document.getElementById("status").innerHTML = `<p>Login autorizado para UID: ${result.uid}</p>`;
+          fecharPopup();
+          // Redirecionamento aqui, se quiser
+        } else if (++tentativas >= 3) {
+          clearInterval(intervalo);
+          document.getElementById("status").innerHTML = `<p>Token expirado ou não autorizado.</p>`;
+        }
+      }, 3000);
+    }
+  </script>
+
+</body>
+
+</html>

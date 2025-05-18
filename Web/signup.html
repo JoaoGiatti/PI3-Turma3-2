@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - FootBet</title>
+    <link rel="stylesheet" href="style_accounts.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo">
+            <img src="images_accounts/logo.png" alt="logo" width="140" height="140">
+        </div>
+        <nav class="nav">
+            <a href="login.html" class="event-button">Login</a>
+        </nav>
+    </header>
+
+    <!-- Conteúdo principal -->
+    <div class="main">
+        <!-- Lado esquerdo -->
+        <div class="left">
+            <h1>CRIE SUA CONTA,<br>COM SEGURANÇA E PRATICIDADE.</h1>
+            <p>Bem-vindo ao FootBet! Cadastre-se para acessar os melhores recursos.</p>
+        </div>
+
+        <!-- Lado direito -->
+        <div class="right">
+            <div class="form-box">
+                <h2>CADASTRE-SE</h2>
+                <form id="signupForm">
+                    <input type="text" name="full_name" id="signup_full_name" class="inputUser"
+                        placeholder="Nome completo" required>
+                    <input type="text" name="username" id="signup_username" class="inputUser"
+                        placeholder="Nome de usuário" required>
+                    <input type="email" name="email" id="signup_email" class="inputUser" placeholder="Email" required>
+                    <input type="password" name="password" id="signup_password" class="inputUser" placeholder="Senha"
+                        required>
+                    <input type="text" name="birth_date" id="signup_birth_date" class="inputUser"
+                        placeholder="Data de nascimento" required>
+                    <button type="submit" id="signup_submit">Cadastrar</button>
+                </form>
+                <a href="login.html">Já tem uma conta? Entrar</a>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Scripts -->
+    <script>
+        const API_URL = "http://127.1.1.0:3000"; // Altere para a URL do backend
+
+        // Cadastro
+        document.getElementById("signupForm").addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const fullName = document.getElementById("signup_full_name").value;
+            const username = document.getElementById("signup_username").value;
+            const email = document.getElementById("signup_email").value;
+            const password = document.getElementById("signup_password").value;
+            const birthDate = document.getElementById("signup_birth_date").value;
+
+            const myHeaders = new Headers();
+            myHeaders.append("fullname", `${fullName}`);
+            myHeaders.append("username", `${username}`);
+            myHeaders.append("email", `${email}`);
+            myHeaders.append("password", `${password}`);
+            myHeaders.append("birthdate", `${birthDate}`);
+
+            const requestOptions = {
+                method: "POST",
+                headers: myHeaders,
+                redirect: "follow"
+            };
+
+            try {
+                const response = await fetch("http://127.0.0.1:3000/signUp", requestOptions);
+
+                const message = await response.text();
+
+                if (response.ok) {
+                    window.open("./login.html", "_blank");
+                } else {
+                    alert(`Erro: ${message}`);
+                }
+            } catch (error) {
+                console.error("Erro ao conectar ao servidor:", error);
+                alert("Erro ao conectar ao servidor. Por favor, tente novamente mais tarde.");
+            }
+        });
+
+    </script>
+</body>
+
+</html>
