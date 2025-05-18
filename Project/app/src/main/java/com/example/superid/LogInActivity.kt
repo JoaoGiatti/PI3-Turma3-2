@@ -9,7 +9,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -22,9 +24,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.superid.ui.theme.SuperIDTheme
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.*
+import com.google.firebase.firestore.FirebaseFirestore
 
 class LogInActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,6 +45,9 @@ class LogInActivity : ComponentActivity() {
 fun LogInScreen() {
     val context = LocalContext.current
     val auth = FirebaseAuth.getInstance()
+    val scrollState = rememberScrollState()
+    val db = FirebaseFirestore.getInstance()
+
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -61,7 +68,8 @@ fun LogInScreen() {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(50.dp),
+                .padding(50.dp)
+                .verticalScroll(scrollState),
             verticalArrangement = Arrangement.Top
         ) {
             Spacer(modifier = Modifier.height(10.dp))
@@ -71,9 +79,9 @@ fun LogInScreen() {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 val imageResArrow = if (isDarkTheme) {
-                    R.drawable.arrowback  // logo para fundo escuro
+                    R.drawable.arrowback
                 } else {
-                    R.drawable.arrowbackblack  // logo para fundo claro
+                    R.drawable.arrowbackblack
                 }
                 Image(
                     painter = painterResource(id = imageResArrow),
@@ -84,11 +92,10 @@ fun LogInScreen() {
                 )
                 Spacer(modifier = Modifier.width(72.dp))
 
-
                 val imageResLogo = if (isDarkTheme) {
-                    R.drawable.superidlogowhiteyellow  // logo para fundo escuro
+                    R.drawable.superidlogowhiteyellow
                 } else {
-                    R.drawable.superidlogoblackyellow  // logo para fundo claro
+                    R.drawable.superidlogoblackyellow
                 }
                 Image(
                     painter = painterResource(id = imageResLogo),
@@ -129,6 +136,8 @@ fun LogInScreen() {
                     if (emailError) emailError = false
                 },
                 isError = emailError,
+                singleLine = true,
+                textStyle = LocalTextStyle.current.copy(fontSize = 14.sp),
                 supportingText = {
                     if (emailError) Text("O campo de e-mail é obrigatório", color = MaterialTheme.colorScheme.error)
                 },
@@ -145,6 +154,7 @@ fun LogInScreen() {
                     unfocusedTextColor = colors.onBackground,
                     focusedTextColor = colors.onBackground,
                     cursorColor = colors.primary,
+
                     errorBorderColor = MaterialTheme.colorScheme.error,
                     errorCursorColor = MaterialTheme.colorScheme.error,
                     errorTextColor = MaterialTheme.colorScheme.error
@@ -168,6 +178,8 @@ fun LogInScreen() {
                     if (passwordError) passwordError = false
                 },
                 isError = passwordError,
+                singleLine = true,
+                textStyle = LocalTextStyle.current.copy(fontSize = 14.sp),
                 supportingText = {
                     if (passwordError) Text("O campo de senha é obrigatório", color = MaterialTheme.colorScheme.error)
                 },
@@ -203,14 +215,23 @@ fun LogInScreen() {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            TextButton(onClick = {
-                val intent = Intent(context, ForgotPasswordActivity::class.java)
-                intent.putExtra("skip_auto_redirect", true)
-                context.startActivity(intent)
-            }) {
-                Text("Esqueceu a senha?")
+            TextButton(
+                onClick = {
+                    val intent = Intent(context, ForgotPasswordActivity::class.java).apply {
+                        putExtra("fromLogin", true) // Indica que veio do login
+                    }
+                    context.startActivity(intent)
+                },
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .padding(end = 4.dp)
+            ) {
+                Text(
+                    "Esqueceu a senha?",
+                    color = colors.secondary,
+                    style = typography.labelMedium
+                )
             }
-
 
             Spacer(modifier = Modifier.height(34.dp))
 
@@ -230,7 +251,27 @@ fun LogInScreen() {
                         auth.signInWithEmailAndPassword(email, password)
                             .addOnCompleteListener { task ->
                                 if (task.isSuccessful) {
-                                    context.startActivity(Intent(context, HomeActivity::class.java))
+                                    val user = auth.currentUser
+                                    val encryptedPassword = encryptPassword(password)
+
+                                    db.collection("users_data")
+                                        .document(user?.uid ?: "")
+                                        .update("senhaMestre", encryptedPassword)
+                                        .addOnSuccessListener {
+                                            Toast.makeText(
+                                                context,
+                                                "Bem-vindo!",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            context.startActivity(Intent(context, HomeActivity::class.java))
+                                        }
+                                        .addOnFailureListener { e ->
+                                            Toast.makeText(
+                                                context,
+                                                "Login feito, mas erro ao salvar senha: ${e.message}",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                        }
                                 } else {
                                     val message = when (val e = task.exception) {
                                         is FirebaseAuthInvalidCredentialsException,

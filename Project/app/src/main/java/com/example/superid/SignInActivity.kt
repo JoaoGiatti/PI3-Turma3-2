@@ -12,7 +12,6 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
@@ -27,6 +26,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.superid.ui.theme.SuperIDTheme
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -46,12 +46,12 @@ class SignInActivity : ComponentActivity() {
 }
 
 fun encryptPassword(password: String): String {
-    val secretKey = "1234567890123456"
+    val secretKey = "1234567890123456" // chave AES 16 bytes
     val key: Key = SecretKeySpec(secretKey.toByteArray(), "AES")
     val cipher = Cipher.getInstance("AES")
     cipher.init(Cipher.ENCRYPT_MODE, key)
     val encryptedBytes = cipher.doFinal(password.toByteArray())
-    return Base64.encodeToString(encryptedBytes, Base64.DEFAULT)
+    return Base64.encodeToString(encryptedBytes, Base64.DEFAULT).trim() // trim para evitar quebras de linha
 }
 
 @Composable
@@ -91,11 +91,7 @@ fun SignInScreen() {
             Spacer(modifier = Modifier.height(10.dp))
 
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                val imageResArrow = if (isDarkTheme) {
-                    R.drawable.arrowback  // logo para fundo escuro
-                } else {
-                    R.drawable.arrowbackblack  // logo para fundo claro
-                }
+                val imageResArrow = if (isDarkTheme) R.drawable.arrowback else R.drawable.arrowbackblack
                 Image(
                     painter = painterResource(id = imageResArrow),
                     contentDescription = "Voltar",
@@ -104,11 +100,7 @@ fun SignInScreen() {
                         .clickable { (context as? ComponentActivity)?.finish() }
                 )
                 Spacer(modifier = Modifier.width(72.dp))
-                val imageResLogo = if (isDarkTheme) {
-                    R.drawable.superidlogowhiteyellow  // logo para fundo escuro
-                } else {
-                    R.drawable.superidlogoblackyellow  // logo para fundo claro
-                }
+                val imageResLogo = if (isDarkTheme) R.drawable.superidlogowhiteyellow else R.drawable.superidlogoblackyellow
                 Image(
                     painter = painterResource(id = imageResLogo),
                     contentDescription = "Logo SuperID",
@@ -123,6 +115,7 @@ fun SignInScreen() {
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // Nome
             Text("Nome completo:", style = typography.labelMedium, color = colors.onBackground)
             Spacer(modifier = Modifier.height(10.dp))
             OutlinedTextField(
@@ -133,6 +126,8 @@ fun SignInScreen() {
                 },
                 placeholder = { Text("Seu nome completo", color = colors.outline, style = typography.labelMedium) },
                 isError = nameError.isNotEmpty(),
+                singleLine = true,
+                textStyle = LocalTextStyle.current.copy(fontSize = 14.sp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = colors.primary,
                     unfocusedBorderColor = colors.primary,
@@ -148,6 +143,7 @@ fun SignInScreen() {
 
             Spacer(modifier = Modifier.height(18.dp))
 
+            // Email
             Text("Seu melhor e-mail:", style = typography.labelMedium, color = colors.onBackground)
             Spacer(modifier = Modifier.height(10.dp))
             OutlinedTextField(
@@ -158,6 +154,8 @@ fun SignInScreen() {
                 },
                 placeholder = { Text("exemplo@email.com", color = colors.outline, style = typography.labelMedium) },
                 isError = emailError.isNotEmpty(),
+                singleLine = true,
+                textStyle = LocalTextStyle.current.copy(fontSize = 14.sp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = colors.primary,
                     unfocusedBorderColor = colors.primary,
@@ -173,6 +171,7 @@ fun SignInScreen() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Senha
             Text("Crie uma senha segura:", style = typography.labelMedium, color = colors.onBackground)
             Spacer(modifier = Modifier.height(10.dp))
             OutlinedTextField(
@@ -183,12 +182,14 @@ fun SignInScreen() {
                 },
                 placeholder = { Text("***********", color = colors.outline, style = typography.labelMedium) },
                 isError = passwordError.isNotEmpty(),
+                singleLine = true,
+                textStyle = LocalTextStyle.current.copy(fontSize = 14.sp),
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
                             if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                            contentDescription = null,
+                            contentDescription = if (passwordVisible) "Ocultar senha" else "Mostrar senha",
                             tint = colors.primary
                         )
                     }
@@ -211,6 +212,8 @@ fun SignInScreen() {
             Button(
                 onClick = {
                     var isValid = true
+                    errorMessage = ""
+
                     if (name.isBlank()) {
                         nameError = "Nome obrigatório"
                         isValid = false
