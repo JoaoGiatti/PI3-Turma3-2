@@ -3,13 +3,10 @@ package com.example.superid
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.os.Build
-import android.view.WindowInsetsController
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.core.content.ContextCompat
 import com.example.superid.ui.theme.DarkGray
 
 class LauncherActivity : ComponentActivity() {
@@ -21,7 +18,10 @@ class LauncherActivity : ComponentActivity() {
         window.statusBarColor = DarkGray.toArgb()
         WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = false
 
-        // Redirecionamento com base nas preferências
+        // Verifica se deve ignorar o redirecionamento automático
+        val isRedirectOverride = intent.getBooleanExtra("skip_auto_redirect", false)
+        if (isRedirectOverride) return
+
         val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         val tutorialVisto = sharedPref.getBoolean("tutorial_visto", false)
         val termosAceitos = sharedPref.getBoolean("termos_aceitos", false)
