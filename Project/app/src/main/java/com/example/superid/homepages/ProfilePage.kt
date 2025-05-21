@@ -37,6 +37,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import android.util.Base64
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.TextButton
 import com.example.superid.ForgotPasswordActivity
 import com.example.superid.HomeActivity
@@ -62,8 +63,10 @@ fun decryptPassword(encryptedPassword: String): String {
 fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
     val item = viewModel.userItem.value
     val context = LocalContext.current
-    val colors = MaterialTheme.colors
-    val typography = MaterialTheme.typography
+    val colors = androidx.compose.material3.MaterialTheme.colorScheme
+    val typography = androidx.compose.material3.MaterialTheme.typography
+    val isDarkTheme = isSystemInDarkTheme()
+
 
     // Estado para verificar se o e-mail está verificado
     var isEmailVerified by remember { mutableStateOf(true) }
@@ -133,7 +136,7 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
         Spacer(modifier = Modifier.height(10.dp))
 
         Divider(
-            color = Color.Gray,
+            color = colors.secondary,
             thickness = 1.dp,
             modifier = Modifier
                 .fillMaxWidth()
@@ -150,12 +153,12 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
                     .background(
-                        color = MaterialTheme.colors.error,
+                        color = colors.error,
                         shape = RoundedCornerShape(12.dp)
                     )
                     .border(
                         width = 1.dp,
-                        color = MaterialTheme.colors.error,
+                        color = colors.error,
                         shape = RoundedCornerShape(12.dp)
                     )
                     .height(40.dp)
@@ -170,14 +173,14 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
                     Icon(
                         painter = painterResource(id = R.drawable.alert),
                         contentDescription = "Alerta",
-                        tint = Color.White,
+                        tint = colors.onBackground,
                         modifier = Modifier
                             .size(24.dp)
                             .padding(end = 8.dp)
                     )
                     Text(
                         text = "Valide seu email para usar todas as funções",
-                        color = Color.White,
+                        color = colors.onBackground,
                         style = MaterialTheme.typography.subtitle2
                     )
                 }
@@ -193,7 +196,7 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
                 contentDescription = "Profile Picture",
                 modifier = Modifier
                     .size(100.dp)
-                    .border(3.dp, Color.White, CircleShape)
+                    .border(3.dp, colors.onBackground, CircleShape)
                     .padding(3.dp)
                     .clip(CircleShape)
             )
@@ -208,7 +211,7 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
         ) {
             Text(
                 text = item.nome,
-                color = Color.White,
+                color = colors.onBackground,
                 style = MaterialTheme.typography.h6.copy(fontWeight = FontWeight.Bold)
             )
 
@@ -218,7 +221,7 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
 
         // Divisor horizontal
         Divider(
-            color = Color.DarkGray,
+            color = colors.secondary,
             thickness = 1.dp,
             modifier = Modifier.padding(horizontal = 24.dp)
         )
@@ -235,18 +238,18 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
             ) {
                 Text(
                     text = "Nome:",
-                    color = Color.White,
+                    color = colors.onBackground,
                     style = MaterialTheme.typography.body2
                 )
                 Text(
                     text = item.nome,
-                    color = Color.White,
+                    color = colors.onBackground,
                     style = MaterialTheme.typography.body1,
                     modifier = Modifier.padding(start = 8.dp)
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
-            Divider(color = Color.DarkGray, thickness = 1.dp)
+            Divider(color = colors.secondary, thickness = 1.dp)
 
             // Campo Email
             Spacer(modifier = Modifier.height(16.dp))
@@ -258,20 +261,20 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
             ) {
                 Text(
                     text = "Email:",
-                    color = Color.White,
+                    color = colors.onBackground,
                     style = MaterialTheme.typography.body2
                 )
                 Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
                     Text(
                         text = item.emailMestre,
-                        color = Color.Gray,
+                        color = colors.secondary,
                         style = MaterialTheme.typography.body1
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     if (!isEmailVerified) {
                         Text(
                             text = "Valide seu Email",
-                            color = Color.Yellow,
+                            color = colors.primary,
                             style = MaterialTheme.typography.caption,
                             modifier = Modifier
                                 .clickable { resendVerificationEmail() }
@@ -280,7 +283,7 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
-            Divider(color = Color.DarkGray, thickness = 1.dp)
+            Divider(color = colors.secondary, thickness = 1.dp)
 
             // Campo Senha
             Spacer(modifier = Modifier.height(16.dp))
@@ -295,7 +298,7 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
             ) {
                 Text(
                     text = "Senha:",
-                    color = Color.White,
+                    color = colors.onBackground,
                     style = MaterialTheme.typography.body2
                 )
                 Column(
@@ -305,14 +308,14 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = if (isPasswordVisible) decryptedPassword else "••••••••",
-                            color = Color.Gray,
+                            color = colors.secondary,
                             style = MaterialTheme.typography.body1
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Icon(
                             imageVector = if (isPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                             contentDescription = if (isPasswordVisible) "Ocultar senha" else "Mostrar senha",
-                            tint = Color.White,
+                            tint = colors.onBackground,
                             modifier = Modifier
                                 .size(20.dp)
                                 .clickable { isPasswordVisible = !isPasswordVisible }
@@ -330,14 +333,14 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
                     ) {
                         Text(
                             text = "Redefinir senha",
-                            color = Color.Yellow,
+                            color = colors.primary,
                             style = MaterialTheme.typography.caption,
                         )
                     }
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
-            Divider(color = Color.DarkGray, thickness = 1.dp)
+            Divider(color = colors.secondary, thickness = 1.dp)
 
             // Espaço extra para o botão não cobrir conteúdo
             Spacer(modifier = Modifier.height(70.dp))
@@ -348,8 +351,8 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
                     context.startActivity(Intent(context, MainActivity::class.java))
                 },
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Color(0xFFE2DA06),
-                    contentColor = Color.Black
+                    backgroundColor = colors.primary,
+                    contentColor = colors.onPrimary
                 ),
                 shape = RoundedCornerShape(50),
                 modifier = Modifier

@@ -7,6 +7,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -65,6 +66,10 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
     var isEmailVerified by remember { mutableStateOf(true) }
     val coroutineScope = rememberCoroutineScope()
 
+    val colors = androidx.compose.material3.MaterialTheme.colorScheme
+    val typography = androidx.compose.material3.MaterialTheme.typography
+    val isDarkTheme = isSystemInDarkTheme()
+
     LaunchedEffect(Unit) {
         val user = FirebaseAuth.getInstance().currentUser
         user?.reload()?.addOnCompleteListener { task ->
@@ -81,13 +86,13 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
             Box(
                 modifier = Modifier
                     .width(300.dp)
-                    .background(Color(0xFF1C1C1E), shape = RoundedCornerShape(20.dp))
+                    .background(colors.surface, shape = RoundedCornerShape(20.dp))
                     .padding(20.dp)
             ) {
                 Column {
                     Text(
                         "Confirmar Exclusão",
-                        color = Color(0xFFFFFF00),
+                        color = colors.primary,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
@@ -98,7 +103,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                         "Tem certeza que deseja excluir '${itemToDelete?.title}'?"
                     }
 
-                    Text(message, color = Color.White)
+                    Text(message, color = colors.onBackground)
 
                     Spacer(Modifier.height(24.dp))
 
@@ -114,7 +119,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                             },
                             modifier = Modifier.padding(end = 8.dp)
                         ) {
-                            Text("Cancelar", color = Color(0xFFFFFF00))
+                            Text("Cancelar", color = colors.primary)
                         }
 
                         Button(
@@ -135,7 +140,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                     }
                                 }
                             },
-                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFFFF00)),
+                            colors = ButtonDefaults.buttonColors(backgroundColor = colors.primary),
                             shape = RoundedCornerShape(50.dp)
                         ) {
                             Text("Confirmar", color = Color.Black)
@@ -167,7 +172,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
         }
 
         Spacer(modifier = Modifier.height(12.dp))
-        Divider(color = Color.Gray, thickness = 1.dp)
+        Divider(color = colors.secondary, thickness = 1.dp)
         Spacer(modifier = Modifier.height(12.dp))
         if (!isEmailVerified) {
             Spacer(modifier = Modifier.height(12.dp))
@@ -177,12 +182,12 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
                     .background(
-                        color = MaterialTheme.colors.error,
+                        color =colors.error,
                         shape = RoundedCornerShape(12.dp)
                     )
                     .border(
                         width = 1.dp,
-                        color = MaterialTheme.colors.error,
+                        color =colors.error,
                         shape = RoundedCornerShape(12.dp)
                     )
                     .height(45.dp)
@@ -197,14 +202,14 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     Icon(
                         painter = painterResource(id = R.drawable.alert),
                         contentDescription = "Alerta",
-                        tint = Color.White,
+                        tint = colors.onBackground,
                         modifier = Modifier
                             .size(24.dp)
                             .padding(end = 8.dp)
                     )
                     Text(
                         text = "Valide seu email para usar todas as funções",
-                        color = Color.White,
+                        color = colors.onBackground,
                         style = MaterialTheme.typography.subtitle2
                     )
                 }
@@ -222,7 +227,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
             Button(
                 onClick = { showAddPasswordDialog = true },
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Color(0xFFE2DA06),
+                    backgroundColor = colors.primary,
                     contentColor = Color.Black
                 ),
                 modifier = Modifier
@@ -238,7 +243,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
             Button(
                 onClick = { showAddCategoryDialog = true },
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Color(0xFFE2DA06),
+                    backgroundColor = colors.primary,
                     contentColor = Color.Black
                 ),
                 modifier = Modifier
@@ -252,7 +257,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
 
         Spacer(modifier = Modifier.height(18.dp))
         Divider(
-            color = Color.Gray,
+            color = colors.secondary,
             thickness = 0.3.dp,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
@@ -270,7 +275,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
             ) {
                 Text(
                     text = "Nenhuma senha cadastrada",
-                    color = Color.Gray.copy(alpha = 0.7f),
+                    color = colors.secondary.copy(alpha = 0.7f),
                     style = MaterialTheme.typography.h6,
                     textAlign = TextAlign.Center
                 )
@@ -336,7 +341,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     item {
                         Spacer(modifier = Modifier.height(12.dp))
                         Divider(
-                            color = Color.Gray,
+                            color = colors.secondary,
                             thickness = 0.3.dp,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -358,7 +363,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                 modifier = Modifier
                     .width(300.dp)
                     .height(400.dp)
-                    .background(Color(0xFF1C1C1E), shape = RoundedCornerShape(20.dp))
+                    .background(colors.background, shape = RoundedCornerShape(20.dp))
                     .padding(20.dp)
             ) {
                 Column(
@@ -373,7 +378,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     ) {
                         Text(
                             "Nova Senha",
-                            color = Color(0xFFFFFF00),
+                            color = colors.primary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
                             modifier = Modifier.padding(bottom = 16.dp)
@@ -384,11 +389,11 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     Spacer(Modifier.height(16.dp))
 
                     // Dropdown de categorias
-                    Text("Categoria", color = Color.Gray)
+                    Text("Categoria", color = colors.secondary)
                     Box(modifier = Modifier.fillMaxWidth()) {
                         Text(
                             text = newPasswordCategory.ifEmpty { "Selecione uma categoria" },
-                            color = if (newPasswordCategory.isEmpty()) Color.Gray else Color.White,
+                            color = if (newPasswordCategory.isEmpty()) colors.secondary else colors.onBackground,
                             modifier = Modifier
                                 .clickable { categoryExpanded = true }
                                 .fillMaxWidth()
@@ -398,14 +403,14 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                             onClick = { categoryExpanded = true },
                             modifier = Modifier.align(Alignment.CenterEnd)
                         ) {
-                            Icon(Icons.Filled.ArrowDropDown, contentDescription = "Dropdown", tint = Color.White)
+                            Icon(Icons.Filled.ArrowDropDown, contentDescription = "Dropdown", tint = colors.onBackground)
                         }
                         DropdownMenu(
                             expanded = categoryExpanded,
                             onDismissRequest = { categoryExpanded = false },
                             modifier = Modifier
                                 .fillMaxWidth(0.9f)
-                                .background(Color(0xFF2E2E2E))
+                                .background(colors.background)
                         ) {
                             categories.forEach { category ->
                                 DropdownMenuItem(
@@ -413,31 +418,31 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                         newPasswordCategory = category
                                         categoryExpanded = false
                                     },
-                                    modifier = Modifier.background(Color(0xFF2E2E2E))
+                                    modifier = Modifier.background(colors.background)
                                 ) {
                                     Text(
                                         text = category,
-                                        color = Color.White,
+                                        color = colors.onBackground,
                                         modifier = Modifier.fillMaxWidth()
                                     )
                                 }
                             }
                         }
                     }
-                    Divider(color = Color(0xFFFFFF00), thickness = 1.dp)
+                    Divider(color = colors.primary, thickness = 1.dp)
                     Spacer(Modifier.height(8.dp))
 
                     // Campos do formulário
                     TextField(
                         value = newPasswordTitle,
                         onValueChange = { newPasswordTitle = it },
-                        placeholder = { Text("Título", color = Color.Gray) },
+                        placeholder = { Text("Título", color = colors.secondary) },
                         singleLine = true,
                         colors = TextFieldDefaults.textFieldColors(
-                            textColor = Color.White,
+                            textColor = colors.onBackground,
                             backgroundColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color(0xFFFFFF00),
-                            focusedIndicatorColor = Color(0xFFFFFF00)
+                            unfocusedIndicatorColor = colors.primary,
+                            focusedIndicatorColor = colors.primary
                         ),
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -445,13 +450,13 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     TextField(
                         value = newLoginValue,
                         onValueChange = { newLoginValue = it },
-                        placeholder = { Text("Login", color = Color.Gray) },
+                        placeholder = { Text("Login", color = colors.secondary) },
                         singleLine = true,
                         colors = TextFieldDefaults.textFieldColors(
-                            textColor = Color.White,
+                            textColor = colors.onBackground,
                             backgroundColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color(0xFFFFFF00),
-                            focusedIndicatorColor = Color(0xFFFFFF00)
+                            unfocusedIndicatorColor = colors.primary,
+                            focusedIndicatorColor = colors.primary
                         ),
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -459,14 +464,14 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     TextField(
                         value = newPasswordValue,
                         onValueChange = { newPasswordValue = it },
-                        placeholder = { Text("Senha", color = Color.Gray) },
+                        placeholder = { Text("Senha", color = colors.secondary) },
                         singleLine = true,
                         visualTransformation = PasswordVisualTransformation(),
                         colors = TextFieldDefaults.textFieldColors(
-                            textColor = Color.White,
+                            textColor = colors.onBackground,
                             backgroundColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color(0xFFFFFF00),
-                            focusedIndicatorColor = Color(0xFFFFFF00)
+                            unfocusedIndicatorColor = colors.primary,
+                            focusedIndicatorColor = colors.primary
                         ),
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -474,12 +479,12 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     TextField(
                         value = newPasswordDescription,
                         onValueChange = { newPasswordDescription = it },
-                        placeholder = { Text("Descrição", color = Color.Gray) },
+                        placeholder = { Text("Descrição", color = colors.secondary) },
                         colors = TextFieldDefaults.textFieldColors(
-                            textColor = Color.White,
+                            textColor = colors.onBackground,
                             backgroundColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color(0xFFFFFF00),
-                            focusedIndicatorColor = Color(0xFFFFFF00)
+                            unfocusedIndicatorColor = colors.primary,
+                            focusedIndicatorColor = colors.primary
                         ),
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -516,7 +521,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                 }
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFFFF00)),
+                        colors = ButtonDefaults.buttonColors(backgroundColor = colors.primary),
                         shape = RoundedCornerShape(50.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -545,7 +550,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                 modifier = Modifier
                     .width(300.dp)
                     .height(550.dp)
-                    .background(Color(0xFF1C1C1E), shape = RoundedCornerShape(20.dp))
+                    .background(colors.surface, shape = RoundedCornerShape(20.dp))
                     .padding(20.dp)
             ) {
                 Column(
@@ -560,7 +565,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     ) {
                         Text(
                             "Editar Senha",
-                            color = Color(0xFFFFFF00),
+                            color = colors.primary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
                             modifier = Modifier.padding(bottom = 16.dp)
@@ -571,11 +576,11 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     Spacer(Modifier.height(16.dp))
 
                     // Dropdown de categorias
-                    Text("Categoria", color = Color.Gray)
+                    Text("Categoria", color = colors.secondary)
                     Box(modifier = Modifier.fillMaxWidth()) {
                         Text(
                             text = newPasswordCategory.ifEmpty { "Selecione uma categoria" },
-                            color = if (newPasswordCategory.isEmpty()) Color.Gray else Color.White,
+                            color = if (newPasswordCategory.isEmpty()) colors.secondary else colors.onBackground,
                             modifier = Modifier
                                 .clickable { categoryExpanded = true }
                                 .fillMaxWidth()
@@ -585,14 +590,14 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                             onClick = { categoryExpanded = true },
                             modifier = Modifier.align(Alignment.CenterEnd)
                         ) {
-                            Icon(Icons.Filled.ArrowDropDown, contentDescription = "Dropdown", tint = Color.White)
+                            Icon(Icons.Filled.ArrowDropDown, contentDescription = "Dropdown", tint = colors.onBackground)
                         }
                         DropdownMenu(
                             expanded = categoryExpanded,
                             onDismissRequest = { categoryExpanded = false },
                             modifier = Modifier
                                 .fillMaxWidth(0.9f)
-                                .background(Color(0xFF2E2E2E))
+                                .background(colors.surface)
                         ) {
                             categories.forEach { category ->
                                 DropdownMenuItem(
@@ -600,31 +605,31 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                         newPasswordCategory = category
                                         categoryExpanded = false
                                     },
-                                    modifier = Modifier.background(Color(0xFF2E2E2E))
+                                    modifier = Modifier.background(colors.surface)
                                 ) {
                                     Text(
                                         text = category,
-                                        color = Color.White,
+                                        color = colors.onBackground,
                                         modifier = Modifier.fillMaxWidth()
                                     )
                                 }
                             }
                         }
                     }
-                    Divider(color = Color(0xFFFFFF00), thickness = 1.dp)
+                    Divider(color = colors.primary, thickness = 1.dp)
                     Spacer(Modifier.height(8.dp))
 
                     // Campos do formulário
                     TextField(
                         value = newPasswordTitle,
                         onValueChange = { newPasswordTitle = it },
-                        placeholder = { Text("Título", color = Color.Gray) },
+                        placeholder = { Text("Título", color = colors.secondary) },
                         singleLine = true,
                         colors = TextFieldDefaults.textFieldColors(
-                            textColor = Color.White,
+                            textColor = colors.onBackground,
                             backgroundColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color(0xFFFFFF00),
-                            focusedIndicatorColor = Color(0xFFFFFF00)
+                            unfocusedIndicatorColor = colors.primary,
+                            focusedIndicatorColor = colors.primary
                         ),
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -632,13 +637,13 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     TextField(
                         value = newLoginValue,
                         onValueChange = { newLoginValue = it },
-                        placeholder = { Text("Login", color = Color.Gray) },
+                        placeholder = { Text("Login", color = colors.secondary) },
                         singleLine = true,
                         colors = TextFieldDefaults.textFieldColors(
-                            textColor = Color.White,
+                            textColor = colors.onBackground,
                             backgroundColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color(0xFFFFFF00),
-                            focusedIndicatorColor = Color(0xFFFFFF00)
+                            unfocusedIndicatorColor = colors.primary,
+                            focusedIndicatorColor = colors.primary
                         ),
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -646,14 +651,14 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     TextField(
                         value = newPasswordValue,
                         onValueChange = { newPasswordValue = it },
-                        placeholder = { Text("Senha", color = Color.Gray) },
+                        placeholder = { Text("Senha", color = colors.secondary) },
                         singleLine = true,
                         visualTransformation = PasswordVisualTransformation(),
                         colors = TextFieldDefaults.textFieldColors(
-                            textColor = Color.White,
+                            textColor = colors.onBackground,
                             backgroundColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color(0xFFFFFF00),
-                            focusedIndicatorColor = Color(0xFFFFFF00)
+                            unfocusedIndicatorColor = colors.primary,
+                            focusedIndicatorColor = colors.primary
                         ),
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -661,12 +666,12 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     TextField(
                         value = newPasswordDescription,
                         onValueChange = { newPasswordDescription = it },
-                        placeholder = { Text("Descrição", color = Color.Gray) },
+                        placeholder = { Text("Descrição", color = colors.secondary) },
                         colors = TextFieldDefaults.textFieldColors(
-                            textColor = Color.White,
+                            textColor = colors.onBackground,
                             backgroundColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color(0xFFFFFF00),
-                            focusedIndicatorColor = Color(0xFFFFFF00)
+                            unfocusedIndicatorColor = colors.primary,
+                            focusedIndicatorColor = colors.primary
                         ),
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -704,7 +709,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                 }
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFFFF00)),
+                        colors = ButtonDefaults.buttonColors(backgroundColor = colors.primary),
                         shape = RoundedCornerShape(50.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -724,7 +729,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
             Box(
                 modifier = Modifier
                     .width(300.dp)
-                    .background(Color(0xFF1C1C1E), shape = RoundedCornerShape(20.dp))
+                    .background(colors.background, shape = RoundedCornerShape(20.dp))
                     .padding(20.dp)
             ) {
                 Column(
@@ -737,7 +742,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     ) {
                         Text(
                             "Nova Categoria",
-                            color = Color(0xFFFFFF00),
+                            color = colors.primary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
                             modifier = Modifier.padding(bottom = 16.dp)
@@ -748,12 +753,12 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     TextField(
                         value = newCategoryValue,
                         onValueChange = { newCategoryValue = it },
-                        placeholder = { Text("Nome da categoria", color = Color.Gray) },
+                        placeholder = { Text("Nome da categoria", color = colors.secondary) },
                         colors = TextFieldDefaults.textFieldColors(
-                            textColor = Color.White,
+                            textColor = colors.onBackground,
                             backgroundColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color(0xFFFFFF00),
-                            focusedIndicatorColor = Color(0xFFFFFF00)
+                            unfocusedIndicatorColor = colors.primary,
+                            focusedIndicatorColor = colors.primary
                         ),
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -769,7 +774,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                             onClick = { showAddCategoryDialog = false },
                             modifier = Modifier.padding(end = 8.dp)
                         ) {
-                            Text("Cancelar", color = Color(0xFFFFFF00))
+                            Text("Cancelar", color = colors.primary)
                         }
 
                         Button(
@@ -790,7 +795,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                     }
                                 }
                             },
-                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFFFF00)),
+                            colors = ButtonDefaults.buttonColors(backgroundColor = colors.primary),
                             shape = RoundedCornerShape(50.dp)
                         ) {
                             Text("Salvar", color = Color.Black)
@@ -811,12 +816,16 @@ fun PasswordCard(
     var isExpanded by remember { mutableStateOf(false) }
     var showPassword by remember { mutableStateOf(false) }
 
+    val colors = androidx.compose.material3.MaterialTheme.colorScheme
+    val typography = androidx.compose.material3.MaterialTheme.typography
+    val isDarkTheme = isSystemInDarkTheme()
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 28.dp, vertical = 8.dp)
             .clickable { isExpanded = !isExpanded },
-        backgroundColor = Color(0xFF252525),
+        backgroundColor = colors.background,
         shape = RoundedCornerShape(12.dp),
         elevation = 4.dp
     ) {
@@ -834,7 +843,7 @@ fun PasswordCard(
                 ) {
                     Text(
                         text = item.title,
-                        color = Color.White,
+                        color = colors.onBackground,
                         style = MaterialTheme.typography.body2,
                         modifier = Modifier.weight(1f)
                     )
@@ -843,13 +852,13 @@ fun PasswordCard(
                         modifier = Modifier
                             .fillMaxHeight()
                             .width(1.dp)
-                            .background(Color.Black)
+                            .background(colors.onPrimary)
                             .padding(horizontal = 8.dp)
                     )
 
                     Text(
                         text = if (showPassword) item.password else item.password.replace(Regex("."), "•"),
-                        color = Color.White,
+                        color = colors.onBackground,
                         style = MaterialTheme.typography.body2,
                         modifier = Modifier
                             .weight(1f)
@@ -863,7 +872,7 @@ fun PasswordCard(
                         Icon(
                             imageVector = if (showPassword) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
                             contentDescription = if (showPassword) "Ocultar senha" else "Mostrar senha",
-                            tint = Color.White.copy(alpha = 0.7f)
+                            tint = colors.onBackground.copy(alpha = 0.7f)
                         )
                     }
                 }
@@ -895,13 +904,13 @@ fun PasswordCard(
                 ) {
                     Text(
                         text = "Login: ${item.login}",
-                        color = Color.Gray,
+                        color = colors.secondary,
                         fontSize = 14.sp
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "Descrição: ${item.description}",
-                        color = Color.Gray,
+                        color = colors.secondary,
                         fontSize = 14.sp
                     )
                 }

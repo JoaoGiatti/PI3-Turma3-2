@@ -3,6 +3,7 @@ package com.example.superid
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -37,6 +38,9 @@ class HomeActivity : ComponentActivity() {
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
+    val colors = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
+    val isDarkTheme = isSystemInDarkTheme()
 
     val navItemList = listOf(
         NavItemData("Senhas", R.drawable.keyicon),
@@ -50,7 +54,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
             NavigationBar(
-                containerColor = Color(0xFF252525)
+                containerColor = colors.surface
             ) {
                 navItemList.forEachIndexed { index, navItem ->
                     NavigationBarItem(
@@ -66,8 +70,8 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                             )
                         },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = Color(0xFFF4EB00),
-                            unselectedIconColor = Color.Gray,
+                            selectedIconColor = colors.primary,
+                            unselectedIconColor = colors.onSurfaceVariant,
                             indicatorColor = Color.Transparent
                         )
                     )
