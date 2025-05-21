@@ -118,8 +118,35 @@
 </script>
 <!-- script do popup -->
 <script>
-  function abrirPopup() {
+  async function abrirPopup() {
     document.getElementById("superid-popup").classList.add("show");
+
+    const apiKey = "gFUkDyS1Cn5LDV+pPgrRqR5LKCbs3rket7j5wKzUr/lSzWbEtY6VpNTrozFhQpNR3UNdYv5qHnknJ5e2a/lPtlhVSC+XinXJz/9D2gann+LYoWhPdSvPq/heZmbXTtQj";
+    const siteUrl = "www.footbet.com";
+
+    try {
+      const response = await fetch("https://us-central1-superid-e195a.cloudfunctions.net/performAuth", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          apiKey,
+          siteUrl
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        document.getElementById("qrcode").src = `data:image/png;base64,${data.qrCodeBase64}`;
+      } else {
+        alert("Erro ao gerar QR Code: " + data.error);
+      }
+    } catch (error) {
+      console.error("Erro ao chamar performAuth:", error);
+      alert("Erro ao gerar QR Code");
+    }
   }
 
   function fecharPopup() {
