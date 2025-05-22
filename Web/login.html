@@ -118,36 +118,69 @@
 </script>
 <!-- script do popup -->
 <script>
-  async function abrirPopup() {
-    document.getElementById("superid-popup").classList.add("show");
+  let loginToken = null;
 
-    const apiKey = "gFUkDyS1Cn5LDV+pPgrRqR5LKCbs3rket7j5wKzUr/lSzWbEtY6VpNTrozFhQpNR3UNdYv5qHnknJ5e2a/lPtlhVSC+XinXJz/9D2gann+LYoWhPdSvPq/heZmbXTtQj";
-    const siteUrl = "www.footbet.com";
+async function abrirPopup() {
+  document.getElementById("superid-popup").classList.add("show");
 
+  const apiKey = "SUA_API_KEY_AQUI";
+  const siteUrl = "www.footbet.com";
+
+  try {
+    const response = await fetch("https://us-central1-superid-e195a.cloudfunctions.net/performAuth", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        apiKey,
+        siteUrl
+      })
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      loginToken = data.loginToken;
+      document.getElementById("qrcode").src = `data:image/png;base64,${data.qrCodeBase64}`;
+      verificarStatusLogin(); // 👈 chama aqui
+    } else {
+      alert("Erro ao gerar QR Code: " + data.error);
+    }
+  } catch (error) {
+    console.error("Erro ao chamar performAuth:", error);
+    alert("Erro ao gerar QR Code");
+  }
+}
+
+async function verificarStatusLogin() {
+  let tentativas = 0;
+  const intervalo = setInterval(async () => {
     try {
-      const response = await fetch("https://us-central1-superid-e195a.cloudfunctions.net/performAuth", {
+      const resp = await fetch("https://us-central1-superid-e195a.cloudfunctions.net/getLoginStatus", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          apiKey,
-          siteUrl
-        })
+        body: JSON.stringify({ loginToken })
       });
 
-      const data = await response.json();
+      const result = await resp.json();
 
-      if (response.ok) {
-        document.getElementById("qrcode").src = `data:image/png;base64,${data.qrCodeBase64}`;
-      } else {
-        alert("Erro ao gerar QR Code: " + data.error);
+      if (result.status === "authorized") {
+        clearInterval(intervalo);
+        alert("Login Realizado com Sucesso!");
+        window.location.href = "home.html"; // 👈 redireciona
+      } else if (++tentativas >= 5) {
+        clearInterval(intervalo);
+        alert("QR Code expirado ou não autorizado.");
       }
-    } catch (error) {
-      console.error("Erro ao chamar performAuth:", error);
-      alert("Erro ao gerar QR Code");
+    } catch (e) {
+      clearInterval(intervalo);
+      console.error("Erro ao verificar status do login:", e);
+      alert("Erro ao verificar status do login.");
     }
-  }
+  }, 3000);
+}
 
   function fecharPopup() {
     document.getElementById("superid-popup").classList.remove("show");
