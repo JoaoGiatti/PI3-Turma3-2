@@ -66,77 +66,126 @@
     </div>
   </div>
 
+  <!-- popup Qrcode -->
   <div id="superid-popup" class="popup">
     <span class="popup-close" onclick="fecharPopup()">&times;</span>
     <h3>Login com SuperID</h3>
-    <p>Escaneie o QR Code com o app SuperID:</p>
-    <img id="qrcode" src="" alt="QR Code de login">
-    <div id="status">
-      <p>Aguardando autenticação...</p>
-    </div>
+    <img id="qrcode" src="assets/qrcode-placeholder.png" alt="QR Code de login">
+    <p>Escaneie com o App SuperID</p>
   </div>  
 
-  <script>
-    const API_URL = "http://127.0.0.1:3000";
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
+  import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js";
 
-    function abrirPopup() {
-      document.getElementById("superid-popup").classList.add("show");
-      gerarQRCode();
+  const firebaseConfig = {
+    apiKey: "AIzaSyD1f73_vPymIx0HB21DE8eCu0N_Cv_slVU",
+    authDomain: "superid-e195a.firebaseapp.com",
+    projectId: "superid-e195a",
+    storageBucket: "superid-e195a.appspot.com",
+    messagingSenderId: "70223257092",
+    appId: "1:70223257092:web:354b4b73e187b4c07a5f51",
+    measurementId: "G-ELDXCYMLFZ"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  document.getElementById("loginForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const email = document.getElementById("login_email").value;
+    const password = document.getElementById("login_password").value;
+
+    try {
+      const q = query(collection(db, "users_site"), where("email", "==", email), where("password", "==", password));
+      const snapshot = await getDocs(q);
+
+      if (snapshot.empty) {
+        alert("Email ou senha inválidos!");
+        return;
+      }
+
+      const userData = snapshot.docs[0].data();
+
+      alert(`Login bem-sucedido! Bem-vindo, ${userData.username}`);
+      window.location.href = "home.html";
+    } catch (error) {
+      console.error("Erro ao logar:", error);
+      alert("Erro ao fazer login. Tente novamente.");
     }
+  });
+</script>
+<!-- script do popup -->
+<script>
+  let loginToken = null;
 
-    function fecharPopup() {
-      document.getElementById("superid-popup").classList.remove("show");
+async function abrirPopup() {
+  document.getElementById("superid-popup").classList.add("show");
+
+  const apiKey = "gFUkDyS1Cn5LDV+pPgrRqR5LKCbs3rket7j5wKzUr/lSzWbEtY6VpNTrozFhQpNR3UNdYv5qHnknJ5e2a/lPtlhVSC+XinXJz/9D2gann+LYoWhPdSvPq/heZmbXTtQj";
+  const siteUrl = "www.footbet.com";
+
+  try {
+    const response = await fetch("https://us-central1-superid-e195a.cloudfunctions.net/performAuth", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        apiKey,
+        siteUrl
+      })
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      loginToken = data.loginToken;
+      document.getElementById("qrcode").src = `data:image/png;base64,${data.qrCodeBase64}`;
+      verificarStatusLogin(); // 👈 chama aqui
+    } else {
+      alert("Erro ao gerar QR Code: " + data.error);
     }
+  } catch (error) {
+    console.error("Erro ao chamar performAuth:", error);
+    alert("Erro ao gerar QR Code");
+  }
+}
 
-    let loginToken = null;
-
-    async function gerarQRCode() {
-      const response = await fetch("https://us-central1-SEU_PROJETO.cloudfunctions.net/performAuth", {
+async function verificarStatusLogin() {
+  let tentativas = 0;
+  const intervalo = setInterval(async () => {
+    try {
+      const resp = await fetch("https://us-central1-superid-e195a.cloudfunctions.net/getLoginStatus", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          apiKey: "CHAVE_DO_SITE",
-          siteUrl: "www.footbet.com"
-        })
+        body: JSON.stringify({ loginToken })
       });
 
-      const data = await response.json();
-      loginToken = data.loginToken;
+      const result = await resp.json();
 
-      const qrImage = document.getElementById("qrcode");
-      qrImage.src = `data:image/png;base64,${data.qrCodeBase64}`;
-
-      verificarStatusLogin();
+      if (result.status === "authorized") {
+        clearInterval(intervalo);
+        alert("Login Realizado com Sucesso!");
+        window.location.href = "home.html"; // 👈 redireciona
+      } else if (++tentativas >= 5) {
+        clearInterval(intervalo);
+        alert("QR Code expirado ou não autorizado.");
+      }
+    } catch (e) {
+      clearInterval(intervalo);
+      console.error("Erro ao verificar status do login:", e);
+      alert("Erro ao verificar status do login.");
     }
+  }, 3000);
+}
 
-    async function verificarStatusLogin() {
-      let tentativas = 0;
-      const intervalo = setInterval(async () => {
-        const resp = await fetch("https://us-central1-SEU_PROJETO.cloudfunctions.net/getLoginStatus", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ loginToken })
-        });
-
-        const result = await resp.json();
-
-        if (result.status === "authorized") {
-          clearInterval(intervalo);
-          document.getElementById("status").innerHTML = `<p>Login autorizado para UID: ${result.uid}</p>`;
-          fecharPopup();
-          // Redirecionamento aqui, se quiser
-        } else if (++tentativas >= 3) {
-          clearInterval(intervalo);
-          document.getElementById("status").innerHTML = `<p>Token expirado ou não autorizado.</p>`;
-        }
-      }, 3000);
-    }
-  </script>
-
+  function fecharPopup() {
+    document.getElementById("superid-popup").classList.remove("show");
+  }
+</script>
 </body>
 
 </html>

@@ -48,50 +48,59 @@
     </div>
 
 
-    <!-- Scripts -->
-    <script>
-        const API_URL = "http://127.1.1.0:3000"; // Altere para a URL do backend
+<!-- Firebase SDK e cadastro no Firestore -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
+  import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js";
 
-        // Cadastro
-        document.getElementById("signupForm").addEventListener("submit", async (event) => {
-            event.preventDefault();
+  const firebaseConfig = {
+    apiKey: "AIzaSyD1f73_vPymIx0HB21DE8eCu0N_Cv_slVU",
+    authDomain: "superid-e195a.firebaseapp.com",
+    projectId: "superid-e195a",
+    storageBucket: "superid-e195a.appspot.com",
+    messagingSenderId: "70223257092",
+    appId: "1:70223257092:web:354b4b73e187b4c07a5f51",
+    measurementId: "G-ELDXCYMLFZ"
+  };
 
-            const fullName = document.getElementById("signup_full_name").value;
-            const username = document.getElementById("signup_username").value;
-            const email = document.getElementById("signup_email").value;
-            const password = document.getElementById("signup_password").value;
-            const birthDate = document.getElementById("signup_birth_date").value;
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-            const myHeaders = new Headers();
-            myHeaders.append("fullname", `${fullName}`);
-            myHeaders.append("username", `${username}`);
-            myHeaders.append("email", `${email}`);
-            myHeaders.append("password", `${password}`);
-            myHeaders.append("birthdate", `${birthDate}`);
+  document.getElementById("signupForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-            const requestOptions = {
-                method: "POST",
-                headers: myHeaders,
-                redirect: "follow"
-            };
+    const fullName = document.getElementById("signup_full_name")?.value || "";
+    const username = document.getElementById("signup_username").value;
+    const email = document.getElementById("signup_email").value;
+    const password = document.getElementById("signup_password").value;
+    const birthDate = document.getElementById("signup_birth_date")?.value || "";
 
-            try {
-                const response = await fetch("http://127.0.0.1:3000/signUp", requestOptions);
+    try {
+      const q = query(collection(db, "users_site"), where("email", "==", email));
+      const snapshot = await getDocs(q);
 
-                const message = await response.text();
+      if (!snapshot.empty) {
+        alert("Esse email já está cadastrado!");
+        return;
+      }
 
-                if (response.ok) {
-                    window.open("./login.html", "_blank");
-                } else {
-                    alert(`Erro: ${message}`);
-                }
-            } catch (error) {
-                console.error("Erro ao conectar ao servidor:", error);
-                alert("Erro ao conectar ao servidor. Por favor, tente novamente mais tarde.");
-            }
-        });
+      await addDoc(collection(db, "users_site"), {
+        fullName,
+        username,
+        email,
+        password,
+        birthDate,
+        createdAt: new Date().toISOString()
+      });
 
-    </script>
+      alert("Cadastro realizado com sucesso!");
+      window.location.href = "login.html";
+    } catch (error) {
+      console.error("Erro no cadastro:", error);
+      alert("Erro ao cadastrar. Tente novamente.");
+    }
+  });
+</script>
 </body>
 
 </html>
