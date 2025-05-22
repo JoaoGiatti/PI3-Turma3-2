@@ -59,3 +59,39 @@ exports.performAuth = functions.https.onRequest((req, res) => {
     }
   });
 });
+
+exports.getLoginStatus = functions.https.onRequest(async (req, res) => {
+  if (req.method !== "POST") {
+    return res.status(405).send("Método não permitido");
+  }
+
+  const { loginToken } = req.body;
+
+  if (!loginToken) {
+    return res.status(400).json({ error: "loginToken é obrigatório" });
+  }
+
+  try {
+    const snapshot = await db.collection("login")
+      .where("loginToken", "==", loginToken)
+      .limit(1)
+      .get();
+
+    if (snapshot.empty) {
+      return res.status(404).json({ status: "not_found" });
+    }
+
+    const doc = snapshot.docs[0];
+    const data = doc.data();
+
+    if (data.user) {
+      return res.status(200).json({ status: "authorized", uid: data.user });
+    } else {
+      return res.status(200).json({ status: "pending" });
+    }
+  } catch (err) {
+    console.error("Erro ao verificar status:", err);
+    return res.status(500).json({ error: "Erro interno ao consultar status" });
+  }
+});
+
