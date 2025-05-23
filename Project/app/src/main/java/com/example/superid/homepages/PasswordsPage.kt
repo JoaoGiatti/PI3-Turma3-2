@@ -164,8 +164,13 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                 .padding(top = 16.dp),
             contentAlignment = Alignment.TopCenter
         ) {
+            val imageRes = if (isDarkTheme) {
+                R.drawable.superid  // logo para fundo escuro
+            } else {
+                R.drawable.superid_black  // logo para fundo claro
+            }
             Image(
-                painter = painterResource(id = R.drawable.superid),
+                painter = painterResource(id = imageRes),
                 contentDescription = "Logo SuperID",
                 modifier = Modifier.height(24.dp)
             )

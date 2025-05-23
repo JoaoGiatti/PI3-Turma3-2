@@ -125,9 +125,13 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
                 .padding(top = 16.dp), // opcional
             contentAlignment = Alignment.TopCenter
         ) {
-            val imageResLogo = R.drawable.superid
+            val imageRes = if (isDarkTheme) {
+                R.drawable.superid  // logo para fundo escuro
+            } else {
+                R.drawable.superid_black  // logo para fundo claro
+            }
             Image(
-                painter = painterResource(id = imageResLogo),
+                painter = painterResource(id = imageRes),
                 contentDescription = "Logo SuperID",
                 modifier = Modifier.height(24.dp)
             )
@@ -191,8 +195,14 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
 
         // Avatar
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            val imageRes = if (isDarkTheme) {
+                R.drawable.profileicon  // logo para fundo escuro
+            } else {
+                R.drawable.profileicon_black  // logo para fundo claro
+            }
+
             Image(
-                painter = painterResource(id = R.drawable.profileicon),
+                painter = painterResource(id = imageRes),
                 contentDescription = "Profile Picture",
                 modifier = Modifier
                     .size(100.dp)
