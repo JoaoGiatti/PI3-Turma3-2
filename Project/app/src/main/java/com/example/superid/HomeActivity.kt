@@ -71,7 +71,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                         },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = colors.primary,
-                            unselectedIconColor = colors.onSurfaceVariant,
+                            unselectedIconColor = colors.secondary,
                             indicatorColor = Color.Transparent
                         )
                     )
