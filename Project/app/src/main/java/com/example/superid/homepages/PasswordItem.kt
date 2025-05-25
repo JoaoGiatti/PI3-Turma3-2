@@ -3,10 +3,12 @@ package com.example.superid.model
 data class PasswordItem(
     val id: String = "",
     val title: String = "",
+    val login: String = "",
     val password: String = "",
-    val login: String = "",       // Novo campo adicionado
-    val description: String = "", // Novo campo adicionado
-    val category: String = ""
+    val description: String = "",
+    val category: String = "",
+    val url: String = "",
+    val accessToken: String = ""
 ) {
     // Construtor vazio para compatibilidade com Firebase
     constructor() : this("", "", "", "", "", "")

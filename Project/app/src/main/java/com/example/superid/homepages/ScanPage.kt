@@ -63,7 +63,7 @@ fun ScanPage(modifier: Modifier = Modifier) {
 
         imageAnalysis.setAnalyzer(
             ContextCompat.getMainExecutor(context),
-            QrCodeAnalizer { result ->
+            QrCodeAnalizer(context) { result ->
                 if (result != code) {
                     code = result
                     Toast.makeText(context, result, Toast.LENGTH_SHORT).show()

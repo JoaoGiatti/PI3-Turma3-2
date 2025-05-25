@@ -52,6 +52,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
 
     var newPasswordTitle by remember { mutableStateOf("") }
     var newLoginValue by remember { mutableStateOf("") }
+    var newPasswordUrl by remember { mutableStateOf("") }
     var newPasswordValue by remember { mutableStateOf("") }
     var newPasswordDescription by remember { mutableStateOf("") }
     var newPasswordCategory by remember { mutableStateOf(categories.firstOrNull() ?: "") }
@@ -486,6 +487,21 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
 
                     Spacer(Modifier.height(12.dp))
 
+                    TextField(
+                        value = newPasswordUrl,
+                        onValueChange = { newPasswordUrl = it },
+                        placeholder = { Text("URL do site (opcional)", color = Color.Gray) },
+                        singleLine = true,
+                        colors = TextFieldDefaults.textFieldColors(
+                            textColor = Color.White,
+                            backgroundColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color(0xFFFFFF00),
+                            focusedIndicatorColor = Color(0xFFFFFF00)
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(Modifier.height(12.dp))
+
                     Button(
                         onClick = {
                             if (newPasswordTitle.isBlank() || newPasswordValue.isBlank() || newLoginValue.isBlank()) {
@@ -493,12 +509,21 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                 return@Button
                             }
 
+                            fun generateAccessToken(length: Int = 256): String {
+                                val charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+                                return (1..length)
+                                    .map { charset.random() }
+                                    .joinToString("")
+                            }
+
                             val newItem = PasswordItem(
                                 title = newPasswordTitle,
                                 login = newLoginValue,
                                 password = newPasswordValue,
                                 description = newPasswordDescription,
-                                category = newPasswordCategory
+                                category = newPasswordCategory,
+                                url = newPasswordUrl,
+                                accessToken = generateAccessToken()
                             )
 
                             coroutineScope.launch {
@@ -507,6 +532,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                     Toast.makeText(context, "Senha adicionada", Toast.LENGTH_SHORT).show()
                                     newPasswordTitle = ""
                                     newLoginValue = ""
+                                    newPasswordUrl = ""
                                     newPasswordValue = ""
                                     newPasswordDescription = ""
                                     newPasswordCategory = categories.firstOrNull() ?: ""

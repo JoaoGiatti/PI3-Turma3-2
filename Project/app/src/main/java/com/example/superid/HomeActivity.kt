@@ -18,7 +18,6 @@ import com.example.superid.homepages.PasswordPage
 import com.example.superid.homepages.ProfilePage
 import com.example.superid.homepages.ScanPage
 import com.example.superid.R
-import com.example.superid.homepages.AddPasswordScreen
 
 // Agora, vamos garantir que a classe 'NavItem' tenha um nome único.
 data class NavItemData(val label: String, val icon: Int)
@@ -101,9 +100,6 @@ fun ContentScreen(
                 // Definindo as rotas
                 composable(Routes.PasswordList) {
                     PasswordPage(navController = navController) // Passando o navController
-                }
-                composable(Routes.AddPassword) {
-                    AddPasswordScreen(navController = navController) // Passando o navController
                 }
             }
         }
