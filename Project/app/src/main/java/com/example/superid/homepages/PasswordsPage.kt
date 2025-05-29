@@ -94,7 +94,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     )
 
                     val message = if (categoryToDelete.isNotEmpty()) {
-                        "Tem certeza que deseja excluir a categoria '$categoryToDelete'?"
+                        "Tem certeza que deseja excluir a categoria '$categoryToDelete'? Todas as senhas dessa categoria também serão excluídas."
                     } else {
                         "Tem certeza que deseja excluir '${itemToDelete?.title}'?"
                     }
@@ -717,7 +717,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                             coroutineScope.launch {
                                 try {
                                     viewModel.updatePassword(updatedItem)
-                                    Toast.makeText(context, "Senha atualizada", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "Alterado com sucesso!", Toast.LENGTH_SHORT).show()
                                     showEditPasswordDialog = false
                                     editingPassword = null
                                     newPasswordTitle = ""
@@ -726,7 +726,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                     newPasswordDescription = ""
                                     newPasswordCategory = categories.firstOrNull() ?: ""
                                 } catch (e: Exception) {
-                                    Toast.makeText(context, "Erro ao atualizar senha", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "Erro ao alterar", Toast.LENGTH_SHORT).show()
                                 }
                             }
                         },

@@ -63,18 +63,7 @@ fun IntroScreen() {
                     .padding(horizontal = 16.dp)
                     .padding(top = 52.dp)
             ) {
-                val imageResArrow = if (isDarkTheme) {
-                    R.drawable.arrowback  // logo para fundo escuro
-                } else {
-                    R.drawable.arrowbackblack  // logo para fundo claro
-                }
-                Image(
-                    painter = painterResource(id = imageResArrow),
-                    contentDescription = "Voltar",
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clickable { (context as? ComponentActivity)?.finish() }
-                )
+
 
                 Spacer(modifier = Modifier.weight(1f))
 

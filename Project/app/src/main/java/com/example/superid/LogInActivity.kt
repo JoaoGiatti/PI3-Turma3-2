@@ -275,7 +275,7 @@ fun LogInScreen() {
                                 } else {
                                     val message = when (val e = task.exception) {
                                         is FirebaseAuthInvalidCredentialsException,
-                                        is FirebaseAuthInvalidUserException -> "Email ou senha inválidos."
+                                        is FirebaseAuthInvalidUserException -> "Email ou senha não encontrado."
                                         is FirebaseNetworkException -> "Sem conexão com a internet."
                                         else -> "Erro ao fazer login. Tente novamente."
                                     }
