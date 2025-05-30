@@ -1,11 +1,113 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home - FootBet</title>
+  <link rel="stylesheet" href="home.css">
 </head>
-<body>
-    <p>Parabéns, essa é a home</p>
+<body onload="carregarDados()">
+  <header class="header">
+    <div class="logo">
+      <img src="images_accounts/logo.png" alt="logo" width="140" height="140">
+    </div>
+    <nav class="nav">
+      <a href="login.html" class="event-button">Sair</a>
+    </nav>
+  </header>
+
+  <div class="main-home">
+    <h1>Informações da Sessão</h1>
+    <div id="dados-usuario" class="dados-container">
+      <p><strong>Carregando dados...</strong></p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD1f73_vPymIx0HB21DE8eCu0N_Cv_slVU",
+      authDomain: "superid-e195a.firebaseapp.com",
+      projectId: "superid-e195a",
+      storageBucket: "superid-e195a.appspot.com",
+      messagingSenderId: "70223257092",
+      appId: "1:70223257092:web:354b4b73e187b4c07a5f51",
+      measurementId: "G-ELDXCYMLFZ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    window.carregarDados = async function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const loginToken = urlParams.get('token');
+      const metodoTradicional = urlParams.get('metodo') === 'tradicional';
+
+      const container = document.getElementById("dados-usuario");
+
+      if (metodoTradicional) {
+        // Login tradicional
+        try {
+          const q = query(collection(db, "users_site"));
+          const snapshot = await getDocs(q);
+
+          if (snapshot.empty) {
+            container.innerHTML = '<p>Nenhum usuário encontrado.</p>';
+            return;
+          }
+
+          const userData = snapshot.docs[0].data(); // pega o primeiro por simplicidade
+
+          container.innerHTML = `
+            <div class="info-box">
+              <p><strong>Nome:</strong> ${userData.fullName || "Não encontrado"}</p>
+              <p><strong>Email:</strong> ${userData.email || "Não encontrado"}</p>
+              <p><strong>Método de Login:</strong> Tradicional</p>
+            </div>
+          `;
+        } catch (error) {
+          container.innerHTML = `<p>Erro ao carregar dados: ${error}</p>`;
+          console.error("Erro:", error);
+        }
+        return;
+      }
+
+      if (!loginToken) {
+        container.innerHTML = '<p>Token não fornecido na URL.</p>';
+        return;
+      }
+
+      try {
+        const q = query(collection(db, "login"), where("loginToken", "==", loginToken));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+          container.innerHTML = '<p>Token inválido ou expirado.</p>';
+          return;
+        }
+
+        const loginData = snapshot.docs[0].data();
+        const email = loginData.login;
+
+        const userQuery = query(collection(db, "users_site"), where("email", "==", email));
+        const userSnap = await getDocs(userQuery);
+
+        const userInfo = !userSnap.empty ? userSnap.docs[0].data() : null;
+
+        container.innerHTML = `
+          <div class="info-box">
+            <p><strong>Nome:</strong> ${userInfo?.fullName || "Não encontrado"}</p>
+            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Método de Login:</strong> SuperID (QR Code)</p>
+          </div>
+        `;
+      } catch (error) {
+        container.innerHTML = `<p>Erro ao carregar dados: ${error}</p>`;
+        console.error("Erro:", error);
+      }
+    };
+  </script>
 </body>
 </html>

@@ -1,0 +1,66 @@
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 0;
+}
+
+.header {
+  background-color: #111;
+  color: white;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo img {
+  height: 60px;
+}
+
+.nav a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  margin-left: 20px;
+  padding: 10px 20px;
+  border: 2px solid white;
+  border-radius: 5px;
+  transition: background 0.3s ease;
+}
+
+.nav a:hover {
+  background-color: white;
+  color: black;
+}
+
+.main-home {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+}
+
+.main-home h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.dados-container {
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.info-box {
+  background-color: #fdfdfd;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.info-box p {
+  margin: 10px 0;
+}

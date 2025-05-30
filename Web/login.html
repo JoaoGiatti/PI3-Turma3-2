@@ -109,7 +109,7 @@
       const userData = snapshot.docs[0].data();
 
       alert(`Login bem-sucedido! Bem-vindo, ${userData.username}`);
-      window.location.href = "home.html";
+      window.location.href = "home.html?metodo=tradicional";
     } catch (error) {
       console.error("Erro ao logar:", error);
       alert("Erro ao fazer login. Tente novamente.");
@@ -169,7 +169,7 @@ async function verificarStatusLogin() {
       if (result.status === "authorized") {
         clearInterval(intervalo);
         alert("Login Realizado com Sucesso!");
-        window.location.href = "home.html"; // 👈 redireciona
+        window.location.href = `home.html?token=${loginToken}`; // REDIRECIONA COM O TOKEN NA URL
       } else if (++tentativas >= 5) {
         clearInterval(intervalo);
         alert("QR Code expirado ou não autorizado.");
