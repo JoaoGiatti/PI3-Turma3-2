@@ -49,6 +49,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.imeNestedScroll
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -87,6 +88,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
     val auth = FirebaseAuth.getInstance()
     var emailVerified by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
+    val typography = androidx.compose.material3.MaterialTheme.typography
 
     fun resendVerificationEmail() {
         val user = auth.currentUser
@@ -283,7 +285,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     .height(50.dp),
                 shape = RoundedCornerShape(50.dp)
             ) {
-                Text("Nova Senha", color = Color.Black)
+                Text("Nova Senha", color = Color.Black,  style = typography.labelMedium)
             }
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -299,7 +301,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     .height(50.dp),
                 shape = RoundedCornerShape(50.dp)
             ) {
-                Text("Nova Categoria", color = Color.Black)
+                Text("Nova Categoria", color = Color.Black,  style = typography.labelMedium)
             }
         }
 
@@ -339,30 +341,29 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                         ) {
                             Text(
                                 text = category,
-                                color = Color(0xFF555555),
-                                style = MaterialTheme.typography.subtitle1,
+                                color = Color(0xFFA1A1A1),
+                                style = typography.bodyLarge,
                             )
 
-                            // Espaçamento entre texto e ícone
+                            Spacer(modifier = Modifier.weight(1f))
+
                             if (category != "Sem Categoria" &&
                                 category != "Sites Web" &&
                                 category != "Aplicativos" &&
                                 category != "Teclados de Acesso Físico"
                             ) {
-                                Spacer(modifier = Modifier.width(10.dp))
                                 IconButton(
                                     onClick = {
                                         categoryToDelete = category
                                         showDeleteConfirmation = true
                                     },
                                     modifier = Modifier
-                                        .size(20.dp) // Ícone menor
-                                        .padding(0.dp) // Sem padding interno
+                                        .size(24.dp)
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Filled.Delete,
+                                        imageVector = Icons.Filled.Close,
                                         contentDescription = "Excluir categoria",
-                                        tint = Color.Red,
+                                        tint = Color(0xFFA1A1A1),
                                         modifier = Modifier.size(20.dp)
                                     )
                                 }
@@ -370,7 +371,8 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                         }
                     }
 
-                    items(items) { item ->
+
+            items(items) { item ->
                         PasswordCard(
                             item = item,
                             onDelete = {
@@ -442,8 +444,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                         Text(
                             "Nova Senha",
                             color = Color(0xFFFFFF00),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
+                            style = typography.titleMedium,
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
                     }
@@ -628,7 +629,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                         TextField(
                             value = newPasswordUrl,
                             onValueChange = { newPasswordUrl = it },
-                            placeholder = { Text("URL do site (opcional)", color = Color.Gray) },
+                            placeholder = { Text("URL do site", color = Color.Gray) },
                             singleLine = true,
                             colors = TextFieldDefaults.textFieldColors(
                                 textColor = Color.White,
@@ -769,8 +770,9 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     Text("Categoria", color = Color.Gray)
                     Box(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = newPasswordCategory.ifEmpty { "Selecione uma categoria" },
+                            text = newPasswordCategory.ifEmpty { "Selecione uma categoria*" },
                             color = if (newPasswordCategory.isEmpty()) Color.Gray else Color.White,
+                            style = typography.titleMedium,
                             modifier = Modifier
                                 .clickable { categoryExpanded = true }
 
@@ -1018,8 +1020,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                         Text(
                             "Nova Categoria",
                             color = Color(0xFFFFFF00),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
+                            style = typography.titleMedium,
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
                     }
@@ -1027,7 +1028,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     TextField(
                         value = newCategoryValue,
                         onValueChange = { newCategoryValue = it },
-                        placeholder = { Text("Nome da categoria", color = Color.Gray) },
+                        placeholder = { Text("Nome da categoria", color = Color.Gray, style = typography.labelMedium) },
                         colors = TextFieldDefaults.textFieldColors(
                             textColor = Color.White,
                             backgroundColor = Color.Transparent,
