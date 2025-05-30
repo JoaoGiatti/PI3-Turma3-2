@@ -9,6 +9,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -16,7 +18,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,8 +40,6 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import android.util.Base64
 import androidx.compose.material3.TextButton
 import com.example.superid.ForgotPasswordActivity
-import com.example.superid.HomeActivity
-import com.example.superid.LogInActivity
 import com.example.superid.MainActivity
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
@@ -67,7 +66,6 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
 
     // Estado para verificar se o e-mail está verificado
     var isEmailVerified by remember { mutableStateOf(true) }
-    val coroutineScope = rememberCoroutineScope()
 
     val decryptedPassword = remember(item.senhaMestre) {
         try {
@@ -80,22 +78,39 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
     val auth = FirebaseAuth.getInstance()
     var emailVerified by remember { mutableStateOf(false) }
 
-
     fun resendVerificationEmail() {
         val user = auth.currentUser
-        user?.let {
-            it.sendEmailVerification()
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        Toast.makeText(context, "Email de verificação enviado!", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(context, "Erro ao enviar email de verificação.", Toast.LENGTH_SHORT).show()
-                    }
-                }
+        if (user == null) {
+            Toast.makeText(context, "Erro: Usuário não encontrado", Toast.LENGTH_SHORT).show()
+            return
         }
+
+        user.sendEmailVerification()
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Toast.makeText(
+                        context,
+                        "Email de verificação enviado para ${user.email}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    val error = task.exception?.message ?: "Erro desconhecido"
+                    val message = when {
+                        error.contains("network", true) -> "Falha de rede. Verifique sua conexão"
+                        error.contains(
+                            "too many",
+                            true
+                        ) -> "Muitas tentativas seguidas. Aguarde cerca de 1 minuto antes de tentar novamente."
+
+                        else -> "Falha ao enviar: $error"
+                    }
+                    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                }
+            }
     }
 
-    // Verificar o status de verificação do e-mail
+
+        // Verificar o status de verificação do e-mail
     LaunchedEffect(Unit) {
         val user = FirebaseAuth.getInstance().currentUser
         user?.reload()?.addOnCompleteListener { task ->
@@ -119,7 +134,7 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 16.dp), // opcional
+                .padding(top = 16.dp),
             contentAlignment = Alignment.TopCenter
         ) {
             val imageResLogo = R.drawable.superid
@@ -141,29 +156,21 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
 
         Spacer(modifier = Modifier.height(18.dp))
 
-        // Alerta de verificação de e-mail
+        // Alerta de verificação de e-mail - AGORA É UM BOTÃO CLICÁVEL
         if (!isEmailVerified) {
             Spacer(modifier = Modifier.height(12.dp))
 
-            Box(
+            // Botão para reenviar email de verificação
+            Button(
+                onClick = { resendVerificationEmail() },
+                colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.error),
+                shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .background(
-                        color = MaterialTheme.colors.error,
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    .border(
-                        width = 1.dp,
-                        color = MaterialTheme.colors.error,
-                        shape = RoundedCornerShape(12.dp)
-                    )
                     .height(40.dp)
             ) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
@@ -176,7 +183,7 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
                             .padding(end = 8.dp)
                     )
                     Text(
-                        text = "Valide seu email para usar todas as funções",
+                        text = "Clique para reenviar o email de verificação",
                         color = Color.White,
                         style = MaterialTheme.typography.subtitle2
                     )
@@ -327,7 +334,7 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
                             context.startActivity(intent)
                         },
 
-                    ) {
+                        ) {
                         Text(
                             text = "Redefinir senha",
                             color = Color.Yellow,

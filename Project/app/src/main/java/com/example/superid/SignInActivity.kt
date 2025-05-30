@@ -14,8 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -51,7 +50,36 @@ fun encryptPassword(password: String): String {
     val cipher = Cipher.getInstance("AES")
     cipher.init(Cipher.ENCRYPT_MODE, key)
     val encryptedBytes = cipher.doFinal(password.toByteArray())
-    return Base64.encodeToString(encryptedBytes, Base64.DEFAULT).trim() // trim para evitar quebras de linha
+    return Base64.encodeToString(encryptedBytes, Base64.DEFAULT).trim()
+}
+
+@Composable
+fun PasswordRequirementItem(
+    isValid: Boolean,
+    text: String,
+    colors: ColorScheme
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(vertical = 2.dp)
+    ) {
+        val iconColor = if (isValid) colors.primary else colors.outline
+
+        Icon(
+            imageVector = Icons.Default.CheckCircle,
+            contentDescription = "Requisito de senha",
+            tint = iconColor,
+            modifier = Modifier.size(16.dp)
+        )
+
+        Spacer(modifier = Modifier.width(4.dp))
+
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelSmall,
+            color = if (isValid) colors.primary else colors.outline
+        )
+    }
 }
 
 @Composable
@@ -90,6 +118,7 @@ fun SignInScreen() {
         ) {
             Spacer(modifier = Modifier.height(10.dp))
 
+            // Na parte do cabeçalho, volte com o código original:
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 val imageResArrow = if (isDarkTheme) R.drawable.arrowback else R.drawable.arrowbackblack
                 Image(
@@ -203,6 +232,31 @@ fun SignInScreen() {
                 ),
                 modifier = Modifier.fillMaxWidth()
             )
+            Spacer(modifier=Modifier.height(4.dp))
+            // Validação da senha
+            Column(modifier = Modifier.padding(top = 4.dp)) {
+                PasswordRequirementItem(
+                    isValid = password.length >= 6,
+                    text = "Mínimo 6 caracteres",
+                    colors = colors
+                )
+                PasswordRequirementItem(
+                    isValid = password.any { it.isDigit() },
+                    text = "Pelo menos 1 número",
+                    colors = colors
+                )
+                PasswordRequirementItem(
+                    isValid = password.any { !it.isLetterOrDigit() },
+                    text = "Pelo menos 1 caractere especial",
+                    colors = colors
+                )
+                PasswordRequirementItem(
+                    isValid = password.any { it.isUpperCase() },
+                    text = "Pelo menos 1 letra maiúscula",
+                    colors = colors
+                )
+            }
+
             if (passwordError.isNotEmpty()) {
                 Text(passwordError, color = colors.error, style = typography.labelSmall)
             }
@@ -227,6 +281,15 @@ fun SignInScreen() {
                     }
                     if (password.length < 6) {
                         passwordError = "Senha deve ter no mínimo 6 caracteres"
+                        isValid = false
+                    } else if (!password.any { it.isDigit() }) {
+                        passwordError = "Senha deve conter pelo menos 1 número"
+                        isValid = false
+                    } else if (!password.any { !it.isLetterOrDigit() }) {
+                        passwordError = "Senha deve conter pelo menos 1 caractere especial"
+                        isValid = false
+                    } else if (!password.any { it.isUpperCase() }) {
+                        passwordError = "Senha deve conter pelo menos 1 letra maiúscula"
                         isValid = false
                     }
 
