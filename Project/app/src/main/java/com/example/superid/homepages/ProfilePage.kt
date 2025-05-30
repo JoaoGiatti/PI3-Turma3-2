@@ -62,7 +62,7 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
     val item = viewModel.userItem.value
     val context = LocalContext.current
     val colors = MaterialTheme.colors
-    val typography = MaterialTheme.typography
+
 
     // Estado para verificar se o e-mail está verificado
     var isEmailVerified by remember { mutableStateOf(true) }
@@ -77,6 +77,8 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
 
     val auth = FirebaseAuth.getInstance()
     var emailVerified by remember { mutableStateOf(false) }
+
+    val typography = androidx.compose.material3.MaterialTheme.typography
 
     fun resendVerificationEmail() {
         val user = auth.currentUser
@@ -243,12 +245,12 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
                 Text(
                     text = "Nome:",
                     color = Color.White,
-                    style = MaterialTheme.typography.body2
+                    style = typography.bodyLarge
                 )
                 Text(
                     text = item.nome,
                     color = Color.White,
-                    style = MaterialTheme.typography.body1,
+                    style = typography.bodyLarge,
                     modifier = Modifier.padding(start = 8.dp)
                 )
             }
@@ -266,13 +268,13 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
                 Text(
                     text = "Email:",
                     color = Color.White,
-                    style = MaterialTheme.typography.body2
+                    style = typography.bodyLarge
                 )
                 Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
                     Text(
                         text = item.emailMestre,
                         color = Color.Gray,
-                        style = MaterialTheme.typography.body1
+                        style = typography.bodyLarge
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     if (!isEmailVerified) {
@@ -303,7 +305,7 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
                 Text(
                     text = "Senha:",
                     color = Color.White,
-                    style = MaterialTheme.typography.body2
+                    style = typography.bodyLarge
                 )
                 Column(
                     modifier = Modifier.weight(1f),
@@ -313,7 +315,7 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
                         Text(
                             text = if (isPasswordVisible) decryptedPassword else "••••••••",
                             color = Color.Gray,
-                            style = MaterialTheme.typography.body1
+                            style = typography.bodyLarge
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Icon(
@@ -325,7 +327,7 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
                                 .clickable { isPasswordVisible = !isPasswordVisible }
                         )
                     }
-                    Spacer(modifier = Modifier.height(4.dp))
+
                     TextButton(
                         onClick = {
                             val intent = Intent(context, ForgotPasswordActivity::class.java).apply {
@@ -343,7 +345,7 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             Divider(color = Color.DarkGray, thickness = 1.dp)
 
             // Espaço extra para o botão não cobrir conteúdo
