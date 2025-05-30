@@ -2,7 +2,6 @@ package com.example.superid.homepages
 
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -11,22 +10,26 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,6 +40,23 @@ import androidx.navigation.NavController
 import com.example.superid.R
 import com.example.superid.model.PasswordItem
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.imeNestedScroll
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
+import androidx.compose.ui.text.input.ImeAction
 import kotlinx.coroutines.launch
 
 @Composable
@@ -65,7 +85,38 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
 
     var isEmailVerified by remember { mutableStateOf(true) }
     val coroutineScope = rememberCoroutineScope()
+    val auth = FirebaseAuth.getInstance()
+    var emailVerified by remember { mutableStateOf(false) }
+    val scrollState = rememberScrollState()
+    val typography = androidx.compose.material3.MaterialTheme.typography
 
+    fun resendVerificationEmail() {
+        val user = auth.currentUser
+        if (user == null) {
+            Toast.makeText(context, "Erro: Usuário não encontrado", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        user.sendEmailVerification()
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Toast.makeText(
+                        context,
+                        "Email de verificação enviado para ${user.email}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    val error = task.exception?.message ?: "Erro desconhecido"
+                    val message = when {
+                        error.contains("network", true) -> "Falha de rede. Verifique sua conexão"
+
+
+                        else -> "Falha ao enviar: Muitas tentativas seguidas. Aguarde cerca de 1 minuto antes de tentar novamente."
+                    }
+                    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                }
+            }
+    }
     LaunchedEffect(Unit) {
         val user = FirebaseAuth.getInstance().currentUser
         user?.reload()?.addOnCompleteListener { task ->
@@ -94,7 +145,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     )
 
                     val message = if (categoryToDelete.isNotEmpty()) {
-                        "Tem certeza que deseja excluir a categoria '$categoryToDelete'?"
+                        "Tem certeza que deseja excluir a categoria '$categoryToDelete' e TODAS as senhas nela contidas?"
                     } else {
                         "Tem certeza que deseja excluir '${itemToDelete?.title}'?"
                     }
@@ -124,15 +175,26 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                 coroutineScope.launch {
                                     try {
                                         if (categoryToDelete.isNotEmpty()) {
+                                            // Excluir todas as senhas dessa categoria
+                                            val passwordsToDelete =
+                                                passwords.filter { it.category == categoryToDelete }
+                                            passwordsToDelete.forEach { viewModel.deletePassword(it) }
+
+                                            // Excluir a categoria
                                             viewModel.deleteCategory(categoryToDelete)
                                             categoryToDelete = ""
-                                        }
-                                        itemToDelete?.let {
-                                            viewModel.deletePassword(it)
-                                            itemToDelete = null
+                                        } else {
+                                            itemToDelete?.let {
+                                                viewModel.deletePassword(it)
+                                                itemToDelete = null
+                                            }
                                         }
                                     } catch (e: Exception) {
-                                        Toast.makeText(context, "Erro ao excluir: ${e.message}", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(
+                                            context,
+                                            "Erro ao excluir: ${e.message}",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                     }
                                 }
                             },
@@ -173,25 +235,17 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
         if (!isEmailVerified) {
             Spacer(modifier = Modifier.height(12.dp))
 
-            Box(
+            // Botão para reenviar email de verificação
+            Button(
+                onClick = { resendVerificationEmail() },
+                colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.error),
+                shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .background(
-                        color = MaterialTheme.colors.error,
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    .border(
-                        width = 1.dp,
-                        color = MaterialTheme.colors.error,
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    .height(45.dp)
+                    .height(40.dp)
             ) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
@@ -204,7 +258,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                             .padding(end = 8.dp)
                     )
                     Text(
-                        text = "Valide seu email para usar todas as funções",
+                        text = "Clique para reenviar o email de verificação",
                         color = Color.White,
                         style = MaterialTheme.typography.subtitle2
                     )
@@ -231,7 +285,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     .height(50.dp),
                 shape = RoundedCornerShape(50.dp)
             ) {
-                Text("Nova Senha", color = Color.Black)
+                Text("Nova Senha", color = Color.Black,  style = typography.labelMedium)
             }
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -247,7 +301,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     .height(50.dp),
                 shape = RoundedCornerShape(50.dp)
             ) {
-                Text("Nova Categoria", color = Color.Black)
+                Text("Nova Categoria", color = Color.Black,  style = typography.labelMedium)
             }
         }
 
@@ -259,7 +313,6 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
         )
 
         val grouped = passwords.groupBy { it.category.ifEmpty { "Sem Categoria" } }
-
 
         if (passwords.isEmpty()) {
             // Mostra mensagem quando não há senhas
@@ -288,10 +341,11 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                         ) {
                             Text(
                                 text = category,
-                                color = Color(0xFF555555),
-                                style = MaterialTheme.typography.subtitle1,
-                                modifier = Modifier.weight(1f)
+                                color = Color(0xFFA1A1A1),
+                                style = typography.bodyLarge,
                             )
+
+                            Spacer(modifier = Modifier.weight(1f))
 
                             if (category != "Sem Categoria" &&
                                 category != "Sites Web" &&
@@ -303,20 +357,22 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                         categoryToDelete = category
                                         showDeleteConfirmation = true
                                     },
-                                    modifier = Modifier.size(24.dp)
+                                    modifier = Modifier
+                                        .size(24.dp)
                                 ) {
                                     Icon(
-                                        painter = painterResource(id = R.drawable.x),
-                                        contentDescription = "Excluir",
-                                        tint = Color.Unspecified,
-                                        modifier = Modifier.size(18.dp)
+                                        imageVector = Icons.Filled.Close,
+                                        contentDescription = "Excluir categoria",
+                                        tint = Color(0xFFA1A1A1),
+                                        modifier = Modifier.size(20.dp)
                                     )
                                 }
                             }
                         }
                     }
 
-                    items(items) { item ->
+
+            items(items) { item ->
                         PasswordCard(
                             item = item,
                             onDelete = {
@@ -329,6 +385,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                 newLoginValue = item.login
                                 newPasswordValue = item.password
                                 newPasswordCategory = item.category
+                                newPasswordDescription = item.description
                                 showEditPasswordDialog = true
                             }
                         )
@@ -351,41 +408,48 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
 
     // Modal de Nova Senha
     if (showAddPasswordDialog) {
+        var passwordVisible by remember { mutableStateOf(false) }
+
+        val focusManager = LocalFocusManager.current
+        val keyboardController = LocalSoftwareKeyboardController.current
+        val coroutineScope = rememberCoroutineScope()
+
+        // Configuração para ajustar o layout quando o teclado aparece
+        val imePadding = WindowInsets.ime.asPaddingValues()
+
         Dialog(
             onDismissRequest = { showAddPasswordDialog = false },
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
             Box(
                 modifier = Modifier
-                    .width(300.dp)
-                    .height(400.dp)
-                    .background(Color(0xFF1C1C1E), shape = RoundedCornerShape(20.dp))
-                    .padding(20.dp)
+
+                    .padding(horizontal = 44.dp)
+                    .imePadding()
+                    .verticalScroll(scrollState),// Adiciona padding para o teclado
             ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
+
+                        .nestedScroll(rememberNestedScrollInteropConnection())// Comportamento otimizado para teclado
+                        .background(Color(0xFF1C1C1E), shape = RoundedCornerShape(20.dp))
+                        .padding(20.dp)
+
                 ) {
-                    // Título amarelo centralizado
                     Box(
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center
+
                     ) {
                         Text(
                             "Nova Senha",
                             color = Color(0xFFFFFF00),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
+                            style = typography.titleMedium,
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
                     }
 
-                    // Restante do conteúdo do modal...
-                    Spacer(Modifier.height(16.dp))
-
-                    // Dropdown de categorias
-                    Text("Categoria", color = Color.Gray)
+                    Text("Categoria", color = Color.Gray, style = typography.bodyLarge)
                     Box(modifier = Modifier.fillMaxWidth()) {
                         Text(
                             text = newPasswordCategory.ifEmpty { "Selecione uma categoria" },
@@ -399,13 +463,17 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                             onClick = { categoryExpanded = true },
                             modifier = Modifier.align(Alignment.CenterEnd)
                         ) {
-                            Icon(Icons.Filled.ArrowDropDown, contentDescription = "Dropdown", tint = Color.White)
+                            Icon(
+                                Icons.Filled.ArrowDropDown,
+                                contentDescription = "Dropdown",
+                                tint = Color.White
+                            )
                         }
                         DropdownMenu(
                             expanded = categoryExpanded,
                             onDismissRequest = { categoryExpanded = false },
                             modifier = Modifier
-                                .fillMaxWidth(0.9f)
+                                .width(300.dp)
                                 .background(Color(0xFF2E2E2E))
                         ) {
                             categories.forEach { category ->
@@ -428,89 +496,179 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     Divider(color = Color(0xFFFFFF00), thickness = 1.dp)
                     Spacer(Modifier.height(8.dp))
 
-                    // Campos do formulário
-                    TextField(
-                        value = newPasswordTitle,
-                        onValueChange = { newPasswordTitle = it },
-                        placeholder = { Text("Título", color = Color.Gray) },
-                        singleLine = true,
-                        colors = TextFieldDefaults.textFieldColors(
-                            textColor = Color.White,
-                            backgroundColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color(0xFFFFFF00),
-                            focusedIndicatorColor = Color(0xFFFFFF00)
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    // Campos do formulário com onFocusChanged
+                    Column(modifier = Modifier.padding(bottom = imePadding.calculateBottomPadding())) {
+                        TextField(
+                            value = newPasswordTitle,
+                            onValueChange = { newPasswordTitle = it },
+                            placeholder = { Text("Título*", color = Color.Gray, style = typography.bodyLarge) },
+                            singleLine = true,
+                            colors = TextFieldDefaults.textFieldColors(
+                                textColor = Color.White,
+                                backgroundColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color(0xFFFFFF00),
+                                focusedIndicatorColor = Color(0xFFFFFF00),
+                                cursorColor = Color(0xFFFFFF00)
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onFocusChanged { focusState ->
+                                    if (focusState.isFocused) {
+                                        coroutineScope.launch {
+                                            scrollState.scrollTo(scrollState.maxValue)
+                                        }
+                                    }
+                                }
+                        )
 
-                    TextField(
-                        value = newLoginValue,
-                        onValueChange = { newLoginValue = it },
-                        placeholder = { Text("Login", color = Color.Gray) },
-                        singleLine = true,
-                        colors = TextFieldDefaults.textFieldColors(
-                            textColor = Color.White,
-                            backgroundColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color(0xFFFFFF00),
-                            focusedIndicatorColor = Color(0xFFFFFF00)
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                        Spacer(Modifier.height(12.dp))
 
-                    TextField(
-                        value = newPasswordValue,
-                        onValueChange = { newPasswordValue = it },
-                        placeholder = { Text("Senha", color = Color.Gray) },
-                        singleLine = true,
-                        visualTransformation = PasswordVisualTransformation(),
-                        colors = TextFieldDefaults.textFieldColors(
-                            textColor = Color.White,
-                            backgroundColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color(0xFFFFFF00),
-                            focusedIndicatorColor = Color(0xFFFFFF00)
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                        TextField(
+                            value = newLoginValue,
+                            onValueChange = { newLoginValue = it },
+                            placeholder = { Text("Login*", color = Color.Gray, style = typography.bodyLarge) },
+                            singleLine = true,
+                            colors = TextFieldDefaults.textFieldColors(
+                                textColor = Color.White,
+                                backgroundColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color(0xFFFFFF00),
+                                focusedIndicatorColor = Color(0xFFFFFF00),
+                                cursorColor = Color(0xFFFFFF00)
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onFocusChanged { focusState ->
+                                    if (focusState.isFocused) {
+                                        coroutineScope.launch {
+                                            scrollState.scrollTo(scrollState.maxValue)
+                                        }
+                                    }
+                                }
+                        )
 
-                    TextField(
-                        value = newPasswordDescription,
-                        onValueChange = { newPasswordDescription = it },
-                        placeholder = { Text("Descrição", color = Color.Gray) },
-                        colors = TextFieldDefaults.textFieldColors(
-                            textColor = Color.White,
-                            backgroundColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color(0xFFFFFF00),
-                            focusedIndicatorColor = Color(0xFFFFFF00)
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                        Spacer(Modifier.height(12.dp))
 
-                    Spacer(Modifier.height(12.dp))
+                        TextField(
+                            value = newPasswordValue,
+                            onValueChange = { newPasswordValue = it },
+                            placeholder = { Text("Senha*", color = Color.Gray,style = typography.bodyLarge) },
+                            singleLine = true,
+                            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                            trailingIcon = {
+                                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                    Icon(
+                                        imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                                        contentDescription = if (passwordVisible) "Ocultar senha" else "Mostrar senha",
+                                        tint = Color(0xFFFFFF00)
+                                    )
+                                }
+                            },
+                            colors = TextFieldDefaults.textFieldColors(
+                                textColor = Color.White,
+                                backgroundColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color(0xFFFFFF00),
+                                focusedIndicatorColor = Color(0xFFFFFF00),
+                                cursorColor = Color(0xFFFFFF00)
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onFocusChanged { focusState ->
+                                    if (focusState.isFocused) {
+                                        coroutineScope.launch {
+                                            scrollState.scrollTo(scrollState.maxValue)
+                                        }
+                                    }
+                                }
+                        )
 
-                    TextField(
-                        value = newPasswordUrl,
-                        onValueChange = { newPasswordUrl = it },
-                        placeholder = { Text("URL do site (opcional)", color = Color.Gray) },
-                        singleLine = true,
-                        colors = TextFieldDefaults.textFieldColors(
-                            textColor = Color.White,
-                            backgroundColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color(0xFFFFFF00),
-                            focusedIndicatorColor = Color(0xFFFFFF00)
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(Modifier.height(12.dp))
+                        Spacer(Modifier.height(12.dp))
+
+                        TextField(
+                            value = newPasswordDescription,
+                            onValueChange = {
+                                // Limita a descrição a 100 caracteres
+                                if (it.length <= 100) {
+                                    newPasswordDescription = it
+                                }
+                            },
+                            placeholder = { Text("Descrição ", color = Color.Gray, style = typography.bodyLarge) },
+                            singleLine = false, // Permite múltiplas linhas para visualização
+                            maxLines = 3, // Limita a 3 linhas visíveis
+                            keyboardOptions = KeyboardOptions(
+                                imeAction = ImeAction.Next // Faz o Enter do teclado ir para o próximo campo
+                            ),
+
+                            colors = TextFieldDefaults.textFieldColors(
+                                textColor = Color.White,
+                                backgroundColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color(0xFFFFFF00),
+                                focusedIndicatorColor = Color(0xFFFFFF00),
+                                cursorColor = Color(0xFFFFFF00)
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onFocusChanged { focusState ->
+                                    if (focusState.isFocused) {
+                                        coroutineScope.launch {
+                                            scrollState.scrollTo(scrollState.maxValue)
+                                        }
+                                    }
+                                }
+                        )
+
+// Adicione este texto abaixo do campo para mostrar o contador de caracteres
+                        Text(
+                            text = "${newPasswordDescription.length}/100",
+                            color = if (newPasswordDescription.length == 100) Color.Red else Color.Gray,
+                            style = MaterialTheme.typography.caption,
+                            modifier = Modifier.align(Alignment.End)
+                        )
+
+                        Spacer(Modifier.height(12.dp))
+
+                        TextField(
+                            value = newPasswordUrl,
+                            onValueChange = { newPasswordUrl = it },
+                            placeholder = { Text("URL do site", color = Color.Gray, style = typography.bodyLarge) },
+                            singleLine = true,
+                            colors = TextFieldDefaults.textFieldColors(
+                                textColor = Color.White,
+                                backgroundColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color(0xFFFFFF00),
+                                focusedIndicatorColor = Color(0xFFFFFF00),
+                                cursorColor = Color(0xFFFFFF00)
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onFocusChanged { focusState ->
+                                    if (focusState.isFocused) {
+                                        coroutineScope.launch {
+                                            scrollState.scrollTo(scrollState.maxValue)
+                                        }
+                                    }
+                                }
+                        )
+                    }
+
+                    Spacer(Modifier.height(24.dp))
 
                     Button(
                         onClick = {
+                            keyboardController?.hide()
+                            focusManager.clearFocus()
+
                             if (newPasswordTitle.isBlank() || newPasswordValue.isBlank() || newLoginValue.isBlank()) {
-                                Toast.makeText(context, "Preencha todos os campos", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    "Preencha todos os campos obrigatórios",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                                 return@Button
                             }
 
                             fun generateAccessToken(length: Int = 256): String {
-                                val charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+                                val charset =
+                                    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
                                 return (1..length)
                                     .map { charset.random() }
                                     .joinToString("")
@@ -529,7 +687,8 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                             coroutineScope.launch {
                                 try {
                                     viewModel.addPassword(newItem)
-                                    Toast.makeText(context, "Senha adicionada", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "Senha adicionada", Toast.LENGTH_SHORT)
+                                        .show()
                                     newPasswordTitle = ""
                                     newLoginValue = ""
                                     newPasswordUrl = ""
@@ -538,13 +697,19 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                     newPasswordCategory = categories.firstOrNull() ?: ""
                                     showAddPasswordDialog = false
                                 } catch (e: Exception) {
-                                    Toast.makeText(context, "Erro ao adicionar senha", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        context,
+                                        "Erro ao adicionar senha",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                             }
                         },
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFFFF00)),
                         shape = RoundedCornerShape(50.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .navigationBarsPadding() // Padding para a barra de navegação
                     ) {
                         Text("Criar", color = Color.Black, fontWeight = FontWeight.Bold)
                     }
@@ -553,8 +718,17 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
         }
     }
 
-    // Modal de Edição de Senha
+// Modal de Edição de Senha - Atualizado com as mesmas melhorias
     if (showEditPasswordDialog && editingPassword != null) {
+        var passwordVisible by remember { mutableStateOf(false) }
+        val scrollState = rememberScrollState()
+        val focusManager = LocalFocusManager.current
+        val keyboardController = LocalSoftwareKeyboardController.current
+        val coroutineScope = rememberCoroutineScope()
+
+        // Configuração para ajustar o layout quando o teclado aparece
+        val imePadding = WindowInsets.ime.asPaddingValues()
+
         Dialog(
             onDismissRequest = {
                 showEditPasswordDialog = false
@@ -569,17 +743,17 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
         ) {
             Box(
                 modifier = Modifier
-                    .width(300.dp)
-                    .height(550.dp)
-                    .background(Color(0xFF1C1C1E), shape = RoundedCornerShape(20.dp))
-                    .padding(20.dp)
+                    .padding(horizontal = 44.dp)
+                    .imePadding() // Adiciona padding para o teclado
             ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
+                        .fillMaxWidth()
+                        .verticalScroll(scrollState)
+                        .nestedScroll(rememberNestedScrollInteropConnection())// Comportamento otimizado para teclado
+                        .background(Color(0xFF1C1C1E), shape = RoundedCornerShape(20.dp))
+                        .padding(20.dp)
                 ) {
-                    // Título amarelo centralizado
                     Box(
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center
@@ -587,37 +761,36 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                         Text(
                             "Editar Senha",
                             color = Color(0xFFFFFF00),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
+                            style = typography.titleMedium,
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
                     }
 
-                    // Restante do conteúdo do modal...
-                    Spacer(Modifier.height(16.dp))
-
-                    // Dropdown de categorias
-                    Text("Categoria", color = Color.Gray)
+                    Text("Categoria", color = Color.Gray, style = typography.bodyLarge)
                     Box(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = newPasswordCategory.ifEmpty { "Selecione uma categoria" },
+                            text = newPasswordCategory.ifEmpty { "Selecione uma categoria*" },
                             color = if (newPasswordCategory.isEmpty()) Color.Gray else Color.White,
                             modifier = Modifier
                                 .clickable { categoryExpanded = true }
-                                .fillMaxWidth()
+
                                 .padding(vertical = 16.dp)
                         )
                         IconButton(
                             onClick = { categoryExpanded = true },
                             modifier = Modifier.align(Alignment.CenterEnd)
                         ) {
-                            Icon(Icons.Filled.ArrowDropDown, contentDescription = "Dropdown", tint = Color.White)
+                            Icon(
+                                Icons.Filled.ArrowDropDown,
+                                contentDescription = "Dropdown",
+                                tint = Color.White
+                            )
                         }
                         DropdownMenu(
                             expanded = categoryExpanded,
                             onDismissRequest = { categoryExpanded = false },
                             modifier = Modifier
-                                .fillMaxWidth(0.9f)
+                                .width(300.dp)
                                 .background(Color(0xFF2E2E2E))
                         ) {
                             categories.forEach { category ->
@@ -640,69 +813,138 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     Divider(color = Color(0xFFFFFF00), thickness = 1.dp)
                     Spacer(Modifier.height(8.dp))
 
-                    // Campos do formulário
-                    TextField(
-                        value = newPasswordTitle,
-                        onValueChange = { newPasswordTitle = it },
-                        placeholder = { Text("Título", color = Color.Gray) },
-                        singleLine = true,
-                        colors = TextFieldDefaults.textFieldColors(
-                            textColor = Color.White,
-                            backgroundColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color(0xFFFFFF00),
-                            focusedIndicatorColor = Color(0xFFFFFF00)
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    // Campos do formulário com onFocusChanged
+                    Column(modifier = Modifier.padding(bottom = imePadding.calculateBottomPadding())) {
+                        TextField(
+                            value = newPasswordTitle,
+                            onValueChange = { newPasswordTitle = it },
+                            placeholder = { Text("Título*", color = Color.Gray, style = typography.bodyLarge) },
+                            singleLine = true,
+                            colors = TextFieldDefaults.textFieldColors(
+                                textColor = Color.White,
+                                backgroundColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color(0xFFFFFF00),
+                                focusedIndicatorColor = Color(0xFFFFFF00),
+                                cursorColor = Color(0xFFFFFF00)
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onFocusChanged { focusState ->
+                                    if (focusState.isFocused) {
+                                        coroutineScope.launch {
+                                            scrollState.scrollTo(scrollState.maxValue)
+                                        }
+                                    }
+                                }
+                        )
 
-                    TextField(
-                        value = newLoginValue,
-                        onValueChange = { newLoginValue = it },
-                        placeholder = { Text("Login", color = Color.Gray) },
-                        singleLine = true,
-                        colors = TextFieldDefaults.textFieldColors(
-                            textColor = Color.White,
-                            backgroundColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color(0xFFFFFF00),
-                            focusedIndicatorColor = Color(0xFFFFFF00)
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                        Spacer(Modifier.height(12.dp))
 
-                    TextField(
-                        value = newPasswordValue,
-                        onValueChange = { newPasswordValue = it },
-                        placeholder = { Text("Senha", color = Color.Gray) },
-                        singleLine = true,
-                        visualTransformation = PasswordVisualTransformation(),
-                        colors = TextFieldDefaults.textFieldColors(
-                            textColor = Color.White,
-                            backgroundColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color(0xFFFFFF00),
-                            focusedIndicatorColor = Color(0xFFFFFF00)
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                        TextField(
+                            value = newLoginValue,
+                            onValueChange = { newLoginValue = it },
+                            placeholder = { Text("Login*", color = Color.Gray, style = typography.bodyLarge) },
+                            singleLine = true,
+                            colors = TextFieldDefaults.textFieldColors(
+                                textColor = Color.White,
+                                backgroundColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color(0xFFFFFF00),
+                                focusedIndicatorColor = Color(0xFFFFFF00),
+                                cursorColor = Color(0xFFFFFF00)
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onFocusChanged { focusState ->
+                                    if (focusState.isFocused) {
+                                        coroutineScope.launch {
+                                            scrollState.scrollTo(scrollState.maxValue)
+                                        }
+                                    }
+                                }
+                        )
 
-                    TextField(
-                        value = newPasswordDescription,
-                        onValueChange = { newPasswordDescription = it },
-                        placeholder = { Text("Descrição", color = Color.Gray) },
-                        colors = TextFieldDefaults.textFieldColors(
-                            textColor = Color.White,
-                            backgroundColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color(0xFFFFFF00),
-                            focusedIndicatorColor = Color(0xFFFFFF00)
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                        Spacer(Modifier.height(12.dp))
 
-                    Spacer(Modifier.height(12.dp))
+                        TextField(
+                            value = newPasswordValue,
+                            onValueChange = { newPasswordValue = it },
+                            placeholder = { Text("Senha*", color = Color.Gray, style = typography.bodyLarge) },
+                            singleLine = true,
+                            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                            trailingIcon = {
+                                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                    Icon(
+                                        imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                                        contentDescription = if (passwordVisible) "Ocultar senha" else "Mostrar senha",
+                                        tint = Color(0xFFFFFF00)
+                                    )
+                                }
+                            },
+                            colors = TextFieldDefaults.textFieldColors(
+                                textColor = Color.White,
+                                backgroundColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color(0xFFFFFF00),
+                                focusedIndicatorColor = Color(0xFFFFFF00),
+                                cursorColor = Color(0xFFFFFF00)
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onFocusChanged { focusState ->
+                                    if (focusState.isFocused) {
+                                        coroutineScope.launch {
+                                            scrollState.scrollTo(scrollState.maxValue)
+                                        }
+                                    }
+                                }
+                        )
+
+                        Spacer(Modifier.height(12.dp))
+
+                        TextField(
+                            value = newPasswordDescription,
+                            onValueChange = {
+                                // Limita a descrição a 100 caracteres
+                                if (it.length <= 100) {
+                                    newPasswordDescription = it
+                                }
+                            },
+                            placeholder = { Text("Descrição", color = Color.Gray, style = typography.bodyLarge) },
+                            singleLine = false, // Permite múltiplas linhas para visualização
+                            maxLines = 3, // Limita a 3 linhas visíveis
+
+
+                            colors = TextFieldDefaults.textFieldColors(
+                                textColor = Color.White,
+                                backgroundColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color(0xFFFFFF00),
+                                focusedIndicatorColor = Color(0xFFFFFF00),
+                                cursorColor = Color(0xFFFFFF00)
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onFocusChanged { focusState ->
+                                    if (focusState.isFocused) {
+                                        coroutineScope.launch {
+                                            scrollState.scrollTo(scrollState.maxValue)
+                                        }
+                                    }
+                                }
+                        )
+                    }
+
+                        Spacer(Modifier.height(24.dp))
 
                     Button(
                         onClick = {
+                            keyboardController?.hide()
+                            focusManager.clearFocus()
+
                             if (newPasswordTitle.isBlank() || newPasswordValue.isBlank() || newLoginValue.isBlank()) {
-                                Toast.makeText(context, "Preencha todos os campos", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    "Preencha todos os campos",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                                 return@Button
                             }
 
@@ -717,7 +959,8 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                             coroutineScope.launch {
                                 try {
                                     viewModel.updatePassword(updatedItem)
-                                    Toast.makeText(context, "Senha atualizada", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "Senha atualizada", Toast.LENGTH_SHORT)
+                                        .show()
                                     showEditPasswordDialog = false
                                     editingPassword = null
                                     newPasswordTitle = ""
@@ -726,37 +969,48 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                     newPasswordDescription = ""
                                     newPasswordCategory = categories.firstOrNull() ?: ""
                                 } catch (e: Exception) {
-                                    Toast.makeText(context, "Erro ao atualizar senha", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        context,
+                                        "Erro ao atualizar senha",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                             }
                         },
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFFFF00)),
                         shape = RoundedCornerShape(50.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .navigationBarsPadding() // Padding para a barra de navegação
                     ) {
-                        Text("Salvar", color = Color.Black, fontWeight = FontWeight.Bold)
+                        Text("Salvar", color = Color.Black, style = typography.labelMedium)
                     }
                 }
             }
         }
     }
 
-    // Modal de Nova Categoria
+    // Modal de Nova Categoria - CORRIGIDO
     if (showAddCategoryDialog) {
+        val scrollState = rememberScrollState()
+
         Dialog(
             onDismissRequest = { showAddCategoryDialog = false },
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
             Box(
                 modifier = Modifier
-                    .width(300.dp)
-                    .background(Color(0xFF1C1C1E), shape = RoundedCornerShape(20.dp))
-                    .padding(20.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 44.dp)
+                    .imePadding() // Adiciona padding para o teclado
             ) {
                 Column(
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(scrollState)
+                        .background(Color(0xFF1C1C1E), shape = RoundedCornerShape(20.dp))
+                        .padding(20.dp)
                 ) {
-                    // Título amarelo centralizado
                     Box(
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center
@@ -764,29 +1018,27 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                         Text(
                             "Nova Categoria",
                             color = Color(0xFFFFFF00),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
+                            style = typography.titleMedium,
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
                     }
 
-                    // Campo de texto
                     TextField(
                         value = newCategoryValue,
                         onValueChange = { newCategoryValue = it },
-                        placeholder = { Text("Nome da categoria", color = Color.Gray) },
+                        placeholder = { Text("Nome da categoria", color = Color.Gray, style = typography.bodyLarge) },
                         colors = TextFieldDefaults.textFieldColors(
                             textColor = Color.White,
                             backgroundColor = Color.Transparent,
                             unfocusedIndicatorColor = Color(0xFFFFFF00),
-                            focusedIndicatorColor = Color(0xFFFFFF00)
+                            focusedIndicatorColor = Color(0xFFFFFF00),
+                            cursorColor = Color(0xFFFFFF00)
                         ),
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Botões
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
@@ -795,31 +1047,44 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                             onClick = { showAddCategoryDialog = false },
                             modifier = Modifier.padding(end = 8.dp)
                         ) {
-                            Text("Cancelar", color = Color(0xFFFFFF00))
+                            Text("Cancelar", color = Color(0xFFFFFF00), style = typography.labelMedium)
                         }
 
                         Button(
                             onClick = {
                                 if (newCategoryValue.isBlank()) {
-                                    Toast.makeText(context, "Digite um nome para a categoria", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        context,
+                                        "Digite um nome para a categoria",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                     return@Button
                                 }
                                 coroutineScope.launch {
                                     try {
                                         viewModel.addCategory(newCategoryValue)
-                                        Toast.makeText(context, "Categoria criada!", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(
+                                            context,
+                                            "Categoria criada!",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                         newCategoryValue = ""
                                         showAddCategoryDialog = false
                                     } catch (e: Exception) {
-                                        Toast.makeText(context, "Erro: ${e.message}", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(
+                                            context,
+                                            "Erro: ${e.message}",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                         Log.e("PasswordPage", "Erro ao adicionar categoria", e)
                                     }
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFFFF00)),
-                            shape = RoundedCornerShape(50.dp)
+                            shape = RoundedCornerShape(50.dp),
+                            modifier = Modifier.navigationBarsPadding() // Padding para a barra de navegação
                         ) {
-                            Text("Salvar", color = Color.Black)
+                            Text("Salvar", color = Color.Black, style = typography.labelMedium)
                         }
                     }
                 }
@@ -827,6 +1092,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
         }
     }
 }
+
 
 @Composable
 fun PasswordCard(
