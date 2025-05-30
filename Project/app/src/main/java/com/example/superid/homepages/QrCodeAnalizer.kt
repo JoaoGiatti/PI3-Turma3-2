@@ -66,57 +66,63 @@ class QrCodeAnalizer(
                         .get()
                         .addOnSuccessListener { docs ->
                             if (!docs.isEmpty) {
-                                val doc = docs.documents[0]
-                                val docId = doc.id
-                                val alreadySet = doc.contains("user")
+                                val loginDoc = docs.documents[0]
+                                val loginDocId = loginDoc.id
+                                val siteUrl = loginDoc.getString("siteUrl") ?: ""
 
-                                if (!alreadySet) {
-                                    db.collection("login").document(docId).update(
-                                        mapOf(
-                                            "user" to uid,
-                                            "timestamp" to FieldValue.serverTimestamp()
-                                        )
-                                    ).addOnSuccessListener {
-                                        Toast.makeText(
-                                            context,
-                                            "Login autorizado com sucesso!",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }.addOnFailureListener {
-                                        Toast.makeText(
-                                            context,
-                                            "Erro ao autorizar login.",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
+                                // busca a senha do app com url que bate
+                                db.collection("user_passwords").document(uid)
+                                    .collection("passwords")
+                                    .whereEqualTo("url", siteUrl)
+                                    .limit(1)
+                                    .get()
+                                    .addOnSuccessListener { passwordDocs ->
+                                        if (!passwordDocs.isEmpty) {
+                                            val passwordDoc = passwordDocs.documents[0]
+                                            val login = passwordDoc.getString("login") ?: ""
+                                            val password = passwordDoc.getString("password") ?: ""
+
+                                            // verifica cadastro do usuario no site
+                                            db.collection("users_site")
+                                                .whereEqualTo("email", login)
+                                                .whereEqualTo("password", password)
+                                                .limit(1)
+                                                .get()
+                                                .addOnSuccessListener { siteUsers ->
+                                                    if (!siteUsers.isEmpty) {
+                                                        // atualiza p login token UID + dados
+                                                        db.collection("login").document(loginDocId)
+                                                            .update(
+                                                                mapOf(
+                                                                    "user" to uid,
+                                                                    "login" to login,
+                                                                    "password" to password,
+                                                                    "timestamp" to FieldValue.serverTimestamp()
+                                                                )
+                                                            )
+
+                                                        // gera noco accessToken e atualiza
+                                                        val newAccessToken = generateAccessToken()
+                                                        db.collection("user_passwords").document(uid)
+                                                            .collection("passwords")
+                                                            .document(passwordDoc.id)
+                                                            .update("accessToken", newAccessToken)
+
+                                                        Toast.makeText(context, "Login autorizado com sucesso!", Toast.LENGTH_SHORT).show()
+                                                    } else {
+                                                        Toast.makeText(context, "Credenciais salvas não conferem com o site", Toast.LENGTH_SHORT).show()
+                                                    }
+                                                }
+                                        } else {
+                                            Toast.makeText(context, "Nenhuma senha salva para este site", Toast.LENGTH_SHORT).show()
+                                        }
                                     }
-                                } else {
-                                    Toast.makeText(
-                                        context,
-                                        "QR Code já utilizado.",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
                             } else {
-                                Toast.makeText(
-                                    context,
-                                    "Token inválido!",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                Toast.makeText(context, "Token de login inválido", Toast.LENGTH_SHORT).show()
                             }
                         }
-                        .addOnFailureListener {
-                            Toast.makeText(
-                                context,
-                                "Erro na consulta ao banco de dados.",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
                 } else {
-                    Toast.makeText(
-                        context,
-                        "Usuário não logado.",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(context, "Usuário não logado", Toast.LENGTH_SHORT).show()
                 }
 
             } catch (e: Exception) {
@@ -130,5 +136,10 @@ class QrCodeAnalizer(
     private fun ByteBuffer.toByteArray(): ByteArray {
         rewind()
         return ByteArray(remaining()).also { get(it) }
+    }
+
+    private fun generateAccessToken(length: Int = 256): String {
+        val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+        return (1..length).map { chars.random() }.joinToString("")
     }
 }
