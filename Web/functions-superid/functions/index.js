@@ -86,7 +86,23 @@ exports.getLoginStatus = functions.https.onRequest((req, res) => {
       const data = doc.data();
 
       if (data.user) {
-        return res.status(200).json({ status: "authorized", uid: data.user });
+        const uid = data.user;
+        const siteUrl = data.siteUrl;
+
+        // Verifica se o usuário tem uma senha salva com o siteUrl correspondente
+        const senhaSnapshot = await db
+          .collection("user_passwords")
+          .doc(uid)
+          .collection("passwords")
+          .where("url", "==", siteUrl)
+          .limit(1)
+          .get();
+
+        if (!senhaSnapshot.empty) {
+          return res.status(200).json({ status: "authorized", uid });
+        } else {
+          return res.status(403).json({ status: "unauthorized", message: "Senha não encontrada para este site" });
+        }
       } else {
         return res.status(200).json({ status: "pending" });
       }
