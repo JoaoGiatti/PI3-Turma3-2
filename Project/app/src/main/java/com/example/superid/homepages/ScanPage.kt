@@ -28,9 +28,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
-import androidx.camera.core.Preview as CameraPreview
 import com.example.superid.R
 import com.google.firebase.auth.FirebaseAuth
+import androidx.camera.core.Preview as CameraPreview
 
 @Composable
 fun ScanPage(modifier: Modifier = Modifier) {
@@ -38,6 +38,7 @@ fun ScanPage(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
+
     var hasCameraPermission by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(
@@ -47,11 +48,11 @@ fun ScanPage(modifier: Modifier = Modifier) {
         )
     }
 
-    // Estado para verificar se o e-mail está verificado
     var isEmailVerified by remember { mutableStateOf(false) }
+    var isLoadingVerification by remember { mutableStateOf(true) }
+
     val auth = FirebaseAuth.getInstance()
 
-    // Função para reenviar o email de verificação
     fun resendVerificationEmail() {
         val user = auth.currentUser
         if (user == null) {
@@ -72,14 +73,14 @@ fun ScanPage(modifier: Modifier = Modifier) {
                     val message = when {
                         error.contains("network", true) -> "Falha de rede. Verifique sua conexão"
                         error.contains("too many", true) -> "Muitas tentativas. Tente mais tarde"
-                        else -> "Falha ao enviar: $error"
+                        else -> "Falha ao enviar: Muitas tentativas. Tente mais tarde"
                     }
                     Toast.makeText(context, message, Toast.LENGTH_LONG).show()
                 }
             }
     }
 
-    // Verificar o status de verificação do e-mail
+    // Verifica se o e-mail está validado
     LaunchedEffect(Unit) {
         val user = auth.currentUser
         if (user != null) {
@@ -89,7 +90,10 @@ fun ScanPage(modifier: Modifier = Modifier) {
                 } else {
                     Toast.makeText(context, "Erro ao verificar o e-mail.", Toast.LENGTH_SHORT).show()
                 }
+                isLoadingVerification = false
             }
+        } else {
+            isLoadingVerification = false
         }
     }
 
@@ -102,126 +106,113 @@ fun ScanPage(modifier: Modifier = Modifier) {
         launcher.launch(Manifest.permission.CAMERA)
     }
 
-    // Usando DisposableEffect para controlar a inicialização e liberação da câmera
-    val previewView = remember { PreviewView(context) } // Definir PreviewView fora da DisposableEffect
-    DisposableEffect(lifecycleOwner) {
-        // Código de inicialização da câmera
-        val cameraProvider = cameraProviderFuture.get()
-        val preview = CameraPreview.Builder().build()
-        val selector = CameraSelector.Builder()
-            .requireLensFacing(CameraSelector.LENS_FACING_BACK)
-            .build()
-        preview.setSurfaceProvider(previewView.surfaceProvider)
+    Box(modifier = modifier.fillMaxSize()) {
+        // Exibe câmera apenas se tiver permissão e e-mail estiver verificado
+        if (hasCameraPermission && isEmailVerified) {
+            val previewView = remember { PreviewView(context) }
 
-        val imageAnalysis = ImageAnalysis.Builder()
-            .setTargetResolution(Size(previewView.width, previewView.height))
-            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-            .build()
+            DisposableEffect(lifecycleOwner) {
+                val cameraProvider = cameraProviderFuture.get()
+                val preview = CameraPreview.Builder().build()
+                val selector = CameraSelector.Builder()
+                    .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+                    .build()
+                preview.setSurfaceProvider(previewView.surfaceProvider)
 
-        imageAnalysis.setAnalyzer(
-            ContextCompat.getMainExecutor(context),
-            QrCodeAnalizer(context) { result ->
-                // Bloquear processamento se e-mail não estiver validado
-                if (!isEmailVerified) {
-                    return@QrCodeAnalizer
-                }
+                val imageAnalysis = ImageAnalysis.Builder()
+                    .setTargetResolution(Size(previewView.width, previewView.height))
+                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                    .build()
 
-                if (result != code) {
-                    code = result
-                    Toast.makeText(context, result, Toast.LENGTH_SHORT).show()
-                }
-            }
-        )
-
-        // Bindando a câmera e a análise de imagem ao ciclo de vida
-        try {
-            cameraProvider.bindToLifecycle(
-                lifecycleOwner,
-                selector,
-                preview,
-                imageAnalysis
-            )
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
-        // Garantindo que ao sair da tela a câmera seja liberada
-        onDispose {
-            // Libera a câmera e qualquer recurso quando sair da tela
-            cameraProvider.unbindAll()
-        }
-    }
-
-    Box(
-        modifier = modifier.fillMaxSize()
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            if (hasCameraPermission) {
-                AndroidView(
-                    factory = { context ->
-                        previewView
-                    },
-                    modifier = Modifier.weight(1f)
+                imageAnalysis.setAnalyzer(
+                    ContextCompat.getMainExecutor(context),
+                    QrCodeAnalizer(context) { result ->
+                        if (result != code) {
+                            code = result
+                            Toast.makeText(context, result, Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 )
+
+                try {
+                    cameraProvider.bindToLifecycle(
+                        lifecycleOwner,
+                        selector,
+                        preview,
+                        imageAnalysis
+                    )
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+
+                onDispose {
+                    cameraProvider.unbindAll()
+                }
             }
+
+            AndroidView(
+                factory = { previewView },
+                modifier = Modifier.fillMaxSize()
+            )
         }
 
-        // Banner de email não verificado (sobreposto na câmera)
-        if (!isEmailVerified) {
+        // Alerta de e-mail não verificado
+        if (!isEmailVerified && !isLoadingVerification) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.7f))
+                    .background(Color.Black.copy(alpha = 0.6f))
                     .clickable { resendVerificationEmail() },
                 contentAlignment = Alignment.Center
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
+                Card(
+                    shape = RoundedCornerShape(20.dp),
+                    backgroundColor = MaterialTheme.colors.error,
+                    elevation = 12.dp,
                     modifier = Modifier
-                        .padding(16.dp)
-                        .background(
-                            color = MaterialTheme.colors.error,
-                            shape = RoundedCornerShape(12.dp)
-                        )
                         .padding(24.dp)
+                        .wrapContentSize()
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.alert),
-                        contentDescription = "Alerta",
-                        modifier = Modifier.size(48.dp)
-                    )
+                    Column(
+                        modifier = Modifier
+                            .padding(24.dp)
+                            .widthIn(min = 250.dp, max = 320.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.alert),
+                            contentDescription = "Alerta",
+                            modifier = Modifier.size(64.dp)
+                        )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                    Text(
-                        text = "Valide seu email",
-                        color = Color.White,
-                        style = MaterialTheme.typography.h6,
-                        fontWeight = FontWeight.Bold
-                    )
+                        Text(
+                            text = "Valide seu email",
+                            style = MaterialTheme.typography.h6,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
 
-                    Text(
-                        text = "Para usar a função de login sem senha!",
-                        color = Color.White,
-                        style = MaterialTheme.typography.subtitle1,
-                        textAlign = TextAlign.Center
-                    )
+                        Text(
+                            text = "É necessário validar seu e-mail para usar a função de login sem senha.",
+                            style = MaterialTheme.typography.body2,
+                            color = Color.White,
+                            textAlign = TextAlign.Center
+                        )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
-
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text(
-                        text = "Clique em qualquer lugar para fechar",
-                        color = Color.White.copy(alpha = 0.7f),
-                        style = MaterialTheme.typography.caption
-                    )
+                        Text(
+                            text = "Toque em qualquer lugar para reenviar o e-mail",
+                            style = MaterialTheme.typography.caption,
+                            color = Color.White.copy(alpha = 0.8f),
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
         }

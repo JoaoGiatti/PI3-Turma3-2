@@ -342,7 +342,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                             Text(
                                 text = category,
                                 color = Color(0xFFA1A1A1),
-                                style = typography.bodyLarge,
+                                style = typography.labelMedium,
                             )
 
                             Spacer(modifier = Modifier.weight(1f))
@@ -449,7 +449,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                         )
                     }
 
-                    Text("Categoria", color = Color.Gray, style = typography.bodyLarge)
+                    Text("Categoria", color = Color.Gray, style = typography.labelMedium)
                     Box(modifier = Modifier.fillMaxWidth()) {
                         Text(
                             text = newPasswordCategory.ifEmpty { "Selecione uma categoria" },
@@ -501,7 +501,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                         TextField(
                             value = newPasswordTitle,
                             onValueChange = { newPasswordTitle = it },
-                            placeholder = { Text("Título*", color = Color.Gray, style = typography.bodyLarge) },
+                            placeholder = { Text("Título*", color = Color.Gray, style = typography.labelMedium) },
                             singleLine = true,
                             colors = TextFieldDefaults.textFieldColors(
                                 textColor = Color.White,
@@ -526,7 +526,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                         TextField(
                             value = newLoginValue,
                             onValueChange = { newLoginValue = it },
-                            placeholder = { Text("Login*", color = Color.Gray, style = typography.bodyLarge) },
+                            placeholder = { Text("Login*", color = Color.Gray, style = typography.labelMedium) },
                             singleLine = true,
                             colors = TextFieldDefaults.textFieldColors(
                                 textColor = Color.White,
@@ -551,7 +551,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                         TextField(
                             value = newPasswordValue,
                             onValueChange = { newPasswordValue = it },
-                            placeholder = { Text("Senha*", color = Color.Gray,style = typography.bodyLarge) },
+                            placeholder = { Text("Senha*", color = Color.Gray,style = typography.labelMedium) },
                             singleLine = true,
                             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                             trailingIcon = {
@@ -591,7 +591,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                     newPasswordDescription = it
                                 }
                             },
-                            placeholder = { Text("Descrição ", color = Color.Gray, style = typography.bodyLarge) },
+                            placeholder = { Text("Descrição ", color = Color.Gray, style = typography.labelMedium) },
                             singleLine = false, // Permite múltiplas linhas para visualização
                             maxLines = 3, // Limita a 3 linhas visíveis
                             keyboardOptions = KeyboardOptions(
@@ -624,12 +624,12 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                             modifier = Modifier.align(Alignment.End)
                         )
 
-                        Spacer(Modifier.height(12.dp))
+                        Spacer(Modifier.height(8.dp))
 
                         TextField(
                             value = newPasswordUrl,
                             onValueChange = { newPasswordUrl = it },
-                            placeholder = { Text("URL do site", color = Color.Gray, style = typography.bodyLarge) },
+                            placeholder = { Text("URL do site", color = Color.Gray, style = typography.labelMedium) },
                             singleLine = true,
                             colors = TextFieldDefaults.textFieldColors(
                                 textColor = Color.White,
@@ -766,7 +766,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                         )
                     }
 
-                    Text("Categoria", color = Color.Gray, style = typography.bodyLarge)
+                    Text("Categoria", color = Color.Gray, style = typography.labelMedium)
                     Box(modifier = Modifier.fillMaxWidth()) {
                         Text(
                             text = newPasswordCategory.ifEmpty { "Selecione uma categoria*" },
@@ -818,7 +818,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                         TextField(
                             value = newPasswordTitle,
                             onValueChange = { newPasswordTitle = it },
-                            placeholder = { Text("Título*", color = Color.Gray, style = typography.bodyLarge) },
+                            placeholder = { Text("Título*", color = Color.Gray, style = typography.labelMedium) },
                             singleLine = true,
                             colors = TextFieldDefaults.textFieldColors(
                                 textColor = Color.White,
@@ -843,7 +843,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                         TextField(
                             value = newLoginValue,
                             onValueChange = { newLoginValue = it },
-                            placeholder = { Text("Login*", color = Color.Gray, style = typography.bodyLarge) },
+                            placeholder = { Text("Login*", color = Color.Gray, style = typography.labelMedium) },
                             singleLine = true,
                             colors = TextFieldDefaults.textFieldColors(
                                 textColor = Color.White,
@@ -868,7 +868,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                         TextField(
                             value = newPasswordValue,
                             onValueChange = { newPasswordValue = it },
-                            placeholder = { Text("Senha*", color = Color.Gray, style = typography.bodyLarge) },
+                            placeholder = { Text("Senha*", color = Color.Gray, style = typography.labelMedium) },
                             singleLine = true,
                             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                             trailingIcon = {
@@ -908,7 +908,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                     newPasswordDescription = it
                                 }
                             },
-                            placeholder = { Text("Descrição", color = Color.Gray, style = typography.bodyLarge) },
+                            placeholder = { Text("Descrição", color = Color.Gray, style = typography.labelMedium) },
                             singleLine = false, // Permite múltiplas linhas para visualização
                             maxLines = 3, // Limita a 3 linhas visíveis
 
@@ -1026,7 +1026,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     TextField(
                         value = newCategoryValue,
                         onValueChange = { newCategoryValue = it },
-                        placeholder = { Text("Nome da categoria", color = Color.Gray, style = typography.bodyLarge) },
+                        placeholder = { Text("Nome da categoria*", color = Color.Gray, style = typography.labelMedium) },
                         colors = TextFieldDefaults.textFieldColors(
                             textColor = Color.White,
                             backgroundColor = Color.Transparent,

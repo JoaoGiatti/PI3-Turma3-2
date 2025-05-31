@@ -52,19 +52,44 @@
       <p>Bem-vindo ao FootBet! Faça o login para acessar os melhores recursos.</p>
     </div>
 
-    <div class="right">
-      <div class="form-box">
-        <h2>LOGIN</h2>
-        <form id="loginForm">
-          <input type="email" name="email" id="login_email" class="inputUser" placeholder="Email" required>
-          <input type="password" name="password" id="login_password" class="inputUser" placeholder="Senha" required>
-          <button type="submit">Entrar</button>
-        </form>
-        <button onclick="abrirPopup()" style="margin-top: 15px;">Entrar com SuperID</button>
-        <a href="signup.html">Não tem uma conta? Cadastrar</a>
-      </div>
-    </div>
-  </div>
+<div class="right">
+  <div class="form-box">
+    <h2>LOGIN</h2>
+    <form id="loginForm">
+      <input type="email" name="email" id="login_email" class="inputUser" placeholder="Email" required>
+      <input type="password" name="password" id="login_password" class="inputUser" placeholder="Senha" required>
+      <button type="submit">Entrar</button>
+    </form>
+
+    <div style="margin-top: 15px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+
+  <button
+    onclick="abrirPopup()"
+    style="
+      background-color: #333333;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      white-space: nowrap;
+    "
+  >
+    <span>
+      Entrar com <img src="assets/Group 16 (2).svg" alt="Logo SuperID" style="height: 25px; display: inline-block; vertical-align: middle;"> <img src="assets/SuperID (2).svg" alt="Logo SuperID" style="height: 16px; display: inline-block; vertical-align: middle;">
+    </span>
+  </button>
+
+  <a href="signup.html" style="color: #333; font-weight: 500; text-decoration: none; white-space: nowrap;">
+    Não tem uma conta? Cadastrar
+  </a>
+</div>
+
+
 
   <!-- popup Qrcode -->
   <div id="superid-popup" class="popup">

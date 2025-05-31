@@ -39,6 +39,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import android.util.Base64
 import androidx.compose.material3.TextButton
+import androidx.compose.ui.text.style.TextDecoration
 import com.example.superid.ForgotPasswordActivity
 import com.example.superid.MainActivity
 import javax.crypto.Cipher
@@ -104,7 +105,7 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
                             true
                         ) -> "Muitas tentativas seguidas. Aguarde cerca de 1 minuto antes de tentar novamente."
 
-                        else -> "Falha ao enviar: $error"
+                        else -> "Falha ao enviar: Muitas tentativas seguidas. Aguarde cerca de 1 minuto antes de tentar novamente."
                     }
                     Toast.makeText(context, message, Toast.LENGTH_LONG).show()
                 }
@@ -330,19 +331,23 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
 
                     TextButton(
                         onClick = {
-                            val intent = Intent(context, ForgotPasswordActivity::class.java).apply {
-                                putExtra("fromLogin", true) // Indica que veio do login
+                            if (isEmailVerified) {
+                                val intent = Intent(context, ForgotPasswordActivity::class.java).apply {
+                                    putExtra("fromLogin", true)
+                                }
+                                context.startActivity(intent)
+                            } else {
+                                Toast.makeText(context, "Você precisa validar seu e-mail antes de redefinir a senha.", Toast.LENGTH_LONG).show()
                             }
-                            context.startActivity(intent)
-                        },
-
-                        ) {
+                        }
+                    ) {
                         Text(
                             text = "Redefinir senha",
                             color = Color.Yellow,
-                            style = MaterialTheme.typography.caption,
+                            style = MaterialTheme.typography.caption.copy(textDecoration = TextDecoration.Underline),
                         )
                     }
+
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
