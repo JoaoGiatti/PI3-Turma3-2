@@ -5,11 +5,79 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Home - FootBet</title>
   <link rel="stylesheet" href="home.css">
+  <style>
+    .welcome-container {
+      text-align: center;
+      padding: 40px;
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      color: white;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+    
+    .welcome-title {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+    
+    .welcome-subtitle {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      margin-bottom: 20px;
+    }
+    
+    .method-badge {
+      display: inline-block;
+      background-color: rgba(255,255,255,0.2);
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      margin-top: 10px;
+    }
+    
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 40px;
+    }
+    
+    .feature-card {
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+    
+    .feature-card:hover {
+      transform: translateY(-5px);
+    }
+    
+    .feature-icon {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+      color: #1e3c72;
+    }
+    
+    .feature-title {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      color: #ffffff;
+    }
+    
+    .feature-desc {
+      color: #ffffff;
+      line-height: 1.5;
+    }
+  </style>
 </head>
 <body onload="carregarDados()">
   <header class="header">
     <div class="logo">
-      <img src="images_accounts/logo.png" alt="logo" width="140" height="140">
+      
     </div>
     <nav class="nav">
       <a href="login.html" class="event-button">Sair</a>
@@ -17,97 +85,45 @@
   </header>
 
   <div class="main-home">
-    <h1>Informações da Sessão</h1>
-    <div id="dados-usuario" class="dados-container">
-      <p><strong>Carregando dados...</strong></p>
+    <div id="welcome-message" class="welcome-container">
+      <!-- Será preenchido pelo JavaScript -->
+    </div>
+    
+    <div class="features">
+      <div class="feature-card">
+        <div class="feature-icon">⚽</div>
+        <h3 class="feature-title">Apostas Esportivas</h3>
+        <p class="feature-desc">Faça suas apostas nos principais campeonatos de futebol do mundo.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3 class="feature-title">Estatísticas</h3>
+        <p class="feature-desc">Acompanhe estatísticas detalhadas para tomar decisões mais informadas.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">🏆</div>
+        <h3 class="feature-title">Torneios</h3>
+        <p class="feature-desc">Participe de torneios exclusivos e concorra a prêmios incríveis.</p>
+      </div>
     </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyD1f73_vPymIx0HB21DE8eCu0N_Cv_slVU",
-      authDomain: "superid-e195a.firebaseapp.com",
-      projectId: "superid-e195a",
-      storageBucket: "superid-e195a.appspot.com",
-      messagingSenderId: "70223257092",
-      appId: "1:70223257092:web:354b4b73e187b4c07a5f51",
-      measurementId: "G-ELDXCYMLFZ"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    window.carregarDados = async function() {
+  <script>
+    function carregarDados() {
       const urlParams = new URLSearchParams(window.location.search);
-      const loginToken = urlParams.get('token');
-      const metodoTradicional = urlParams.get('metodo') === 'tradicional';
-
-      const container = document.getElementById("dados-usuario");
-
-      if (metodoTradicional) {
-        // Login tradicional
-        try {
-          const q = query(collection(db, "users_site"));
-          const snapshot = await getDocs(q);
-
-          if (snapshot.empty) {
-            container.innerHTML = '<p>Nenhum usuário encontrado.</p>';
-            return;
-          }
-
-          const userData = snapshot.docs[0].data(); // pega o primeiro por simplicidade
-
-          container.innerHTML = `
-            <div class="info-box">
-              <p><strong>Nome:</strong> ${userData.fullName || "Não encontrado"}</p>
-              <p><strong>Email:</strong> ${userData.email || "Não encontrado"}</p>
-              <p><strong>Método de Login:</strong> Tradicional</p>
-            </div>
-          `;
-        } catch (error) {
-          container.innerHTML = `<p>Erro ao carregar dados: ${error}</p>`;
-          console.error("Erro:", error);
-        }
-        return;
-      }
-
-      if (!loginToken) {
-        container.innerHTML = '<p>Token não fornecido na URL.</p>';
-        return;
-      }
-
-      try {
-        const q = query(collection(db, "login"), where("loginToken", "==", loginToken));
-        const snapshot = await getDocs(q);
-
-        if (snapshot.empty) {
-          container.innerHTML = '<p>Token inválido ou expirado.</p>';
-          return;
-        }
-
-        const loginData = snapshot.docs[0].data();
-        const email = loginData.login;
-
-        const userQuery = query(collection(db, "users_site"), where("email", "==", email));
-        const userSnap = await getDocs(userQuery);
-
-        const userInfo = !userSnap.empty ? userSnap.docs[0].data() : null;
-
-        container.innerHTML = `
-          <div class="info-box">
-            <p><strong>Nome:</strong> ${userInfo?.fullName || "Não encontrado"}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Método de Login:</strong> SuperID (QR Code)</p>
-          </div>
-        `;
-      } catch (error) {
-        container.innerHTML = `<p>Erro ao carregar dados: ${error}</p>`;
-        console.error("Erro:", error);
-      }
-    };
+      const nome = urlParams.get('nome') || '';
+      const loginToken = urlParams.get('loginToken') || 'Usuário';
+      const metodo = urlParams.get('metodo') || 'SuperID';
+      
+      
+      const welcomeDiv = document.getElementById("welcome-message");
+      welcomeDiv.innerHTML = `
+        <h1 class="welcome-title">Olá,${nome} Seja bem-vindo ao FootBet!</h1>
+        <span class="method-badge">Método de login: ${metodo}</span>
+      `;
+    }
   </script>
 </body>
 </html>
