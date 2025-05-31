@@ -90,46 +90,53 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
     val scrollState = rememberScrollState()
     val typography = androidx.compose.material3.MaterialTheme.typography
 
+    // Função para reenviar o email de verificação
     fun resendVerificationEmail() {
+        // Obtém o usuário atual autenticado
         val user = auth.currentUser
         if (user == null) {
             Toast.makeText(context, "Erro: Usuário não encontrado", Toast.LENGTH_SHORT).show()
             return
         }
 
+        // Envia o email de verificação
         user.sendEmailVerification()
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+                    // Mostra mensagem de sucesso
                     Toast.makeText(
                         context,
                         "Email de verificação enviado para ${user.email}",
                         Toast.LENGTH_LONG
                     ).show()
                 } else {
+                    // Trata diferentes tipos de erros
                     val error = task.exception?.message ?: "Erro desconhecido"
                     val message = when {
                         error.contains("network", true) -> "Falha de rede. Verifique sua conexão"
-
-
                         else -> "Falha ao enviar: Muitas tentativas seguidas. Aguarde cerca de 1 minuto antes de tentar novamente."
                     }
                     Toast.makeText(context, message, Toast.LENGTH_LONG).show()
                 }
             }
     }
+
+// Efeito para verificar se o email foi verificado
     LaunchedEffect(Unit) {
         val user = FirebaseAuth.getInstance().currentUser
+        // Recarrega o usuário para verificar o status de verificação do email
         user?.reload()?.addOnCompleteListener { task ->
             isEmailVerified = task.isSuccessful && user.isEmailVerified
         }
     }
 
-    // Delete confirmation dialog
+// Diálogo de confirmação para exclusão
     if (showDeleteConfirmation) {
         Dialog(
             onDismissRequest = { showDeleteConfirmation = false },
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
+            // Layout do diálogo
             Box(
                 modifier = Modifier
                     .width(300.dp)
@@ -137,6 +144,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     .padding(20.dp)
             ) {
                 Column {
+                    // Título do diálogo
                     Text(
                         "Confirmar Exclusão",
                         color = Color(0xFFFFFF00),
@@ -144,6 +152,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
 
+                    // Mensagem dinâmica baseada no que está sendo excluído (categoria ou item)
                     val message = if (categoryToDelete.isNotEmpty()) {
                         "Tem certeza que deseja excluir a categoria '$categoryToDelete' e TODAS as senhas nela contidas?"
                     } else {
@@ -154,10 +163,12 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
 
                     Spacer(Modifier.height(24.dp))
 
+                    // Botões de ação do diálogo
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
+                        // Botão Cancelar
                         TextButton(
                             onClick = {
                                 showDeleteConfirmation = false
@@ -169,21 +180,23 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                             Text("Cancelar", color = Color(0xFFFFFF00))
                         }
 
+                        // Botão Confirmar
                         Button(
                             onClick = {
                                 showDeleteConfirmation = false
                                 coroutineScope.launch {
                                     try {
                                         if (categoryToDelete.isNotEmpty()) {
-                                            // Excluir todas as senhas dessa categoria
+                                            // Exclui todas as senhas da categoria
                                             val passwordsToDelete =
                                                 passwords.filter { it.category == categoryToDelete }
                                             passwordsToDelete.forEach { viewModel.deletePassword(it) }
 
-                                            // Excluir a categoria
+                                            // Exclui a categoria
                                             viewModel.deleteCategory(categoryToDelete)
                                             categoryToDelete = ""
                                         } else {
+                                            // Exclui um item específico
                                             itemToDelete?.let {
                                                 viewModel.deletePassword(it)
                                                 itemToDelete = null
@@ -209,6 +222,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
         }
     }
 
+// Layout principal da tela
     Column(
         modifier = Modifier
             .padding(vertical = 24.dp)
@@ -232,6 +246,8 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
         Spacer(modifier = Modifier.height(12.dp))
         Divider(color = Color.Gray, thickness = 1.dp)
         Spacer(modifier = Modifier.height(12.dp))
+
+        // Seção de verificação de email (só aparece se o email não estiver verificado)
         if (!isEmailVerified) {
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -268,12 +284,14 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
             Spacer(modifier = Modifier.height(16.dp))
         }
 
+        // Botões de ação principais
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 32.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            // Botão para adicionar nova senha
             Button(
                 onClick = { showAddPasswordDialog = true },
                 colors = ButtonDefaults.buttonColors(
@@ -290,6 +308,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
 
             Spacer(modifier = Modifier.width(12.dp))
 
+            // Botão para adicionar nova categoria
             Button(
                 onClick = { showAddCategoryDialog = true },
                 colors = ButtonDefaults.buttonColors(
@@ -312,8 +331,10 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
             modifier = Modifier.padding(horizontal = 16.dp)
         )
 
+        // Agrupa as senhas por categoria
         val grouped = passwords.groupBy { it.category.ifEmpty { "Sem Categoria" } }
 
+        // Verifica se há senhas cadastradas
         if (passwords.isEmpty()) {
             // Mostra mensagem quando não há senhas
             Box(
@@ -330,9 +351,11 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                 )
             }
         } else {
+            // Lista de senhas agrupadas por categoria
             LazyColumn {
                 grouped.forEach { (category, items) ->
                     item {
+                        // Cabeçalho da categoria
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
@@ -347,6 +370,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
 
                             Spacer(modifier = Modifier.weight(1f))
 
+                            // Mostra botão de excluir apenas para categorias personalizadas
                             if (category != "Sem Categoria" &&
                                 category != "Sites Web" &&
                                 category != "Aplicativos" &&
@@ -371,8 +395,8 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                         }
                     }
 
-
-            items(items) { item ->
+                    // Items da categoria
+                    items(items) { item ->
                         PasswordCard(
                             item = item,
                             onDelete = {
@@ -380,6 +404,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                 showDeleteConfirmation = true
                             },
                             onEdit = {
+                                // Preenche os campos de edição com os valores da senha selecionada
                                 editingPassword = item
                                 newPasswordTitle = item.title
                                 newLoginValue = item.login
@@ -391,6 +416,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                         )
                     }
 
+                    // Adiciona espaçamento e divisor entre categorias
                     item {
                         Spacer(modifier = Modifier.height(12.dp))
                         Divider(
@@ -406,15 +432,17 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
         }
     }
 
-    // Modal de Nova Senha
+    // Modal/Dialog para adicionar nova senha
     if (showAddPasswordDialog) {
+        // Estado para controlar a visibilidade da senha
         var passwordVisible by remember { mutableStateOf(false) }
 
+        // Gerenciadores de foco e teclado
         val focusManager = LocalFocusManager.current
         val keyboardController = LocalSoftwareKeyboardController.current
         val coroutineScope = rememberCoroutineScope()
 
-        // Configuração para ajustar o layout quando o teclado aparece
+        // Ajuste de padding quando o teclado virtual aparece
         val imePadding = WindowInsets.ime.asPaddingValues()
 
         Dialog(
@@ -423,23 +451,20 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
         ) {
             Box(
                 modifier = Modifier
-
                     .padding(horizontal = 44.dp)
-                    .imePadding()
-                    .verticalScroll(scrollState),// Adiciona padding para o teclado
+                    .imePadding() // Aplica padding para o teclado
+                    .verticalScroll(scrollState),
             ) {
                 Column(
                     modifier = Modifier
-
-                        .nestedScroll(rememberNestedScrollInteropConnection())// Comportamento otimizado para teclado
+                        .nestedScroll(rememberNestedScrollInteropConnection()) // Melhora o comportamento com teclado
                         .background(Color(0xFF1C1C1E), shape = RoundedCornerShape(20.dp))
                         .padding(20.dp)
-
                 ) {
+                    // Título do modal
                     Box(
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center
-
                     ) {
                         Text(
                             "Nova Senha",
@@ -449,6 +474,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                         )
                     }
 
+                    // Seletor de categoria
                     Text("Categoria", color = Color.Gray, style = typography.labelMedium)
                     Box(modifier = Modifier.fillMaxWidth()) {
                         Text(
@@ -459,6 +485,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                 .fillMaxWidth()
                                 .padding(vertical = 16.dp)
                         )
+                        // Ícone do dropdown
                         IconButton(
                             onClick = { categoryExpanded = true },
                             modifier = Modifier.align(Alignment.CenterEnd)
@@ -469,6 +496,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                 tint = Color.White
                             )
                         }
+                        // Menu de categorias
                         DropdownMenu(
                             expanded = categoryExpanded,
                             onDismissRequest = { categoryExpanded = false },
@@ -496,8 +524,9 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     Divider(color = Color(0xFFFFFF00), thickness = 1.dp)
                     Spacer(Modifier.height(8.dp))
 
-                    // Campos do formulário com onFocusChanged
+                    // Campos do formulário
                     Column(modifier = Modifier.padding(bottom = imePadding.calculateBottomPadding())) {
+                        // Campo de título
                         TextField(
                             value = newPasswordTitle,
                             onValueChange = { newPasswordTitle = it },
@@ -513,6 +542,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .onFocusChanged { focusState ->
+                                    // Rolagem automática quando o campo recebe foco
                                     if (focusState.isFocused) {
                                         coroutineScope.launch {
                                             scrollState.scrollTo(scrollState.maxValue)
@@ -523,6 +553,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
 
                         Spacer(Modifier.height(12.dp))
 
+                        // Campo de login
                         TextField(
                             value = newLoginValue,
                             onValueChange = { newLoginValue = it },
@@ -548,13 +579,15 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
 
                         Spacer(Modifier.height(12.dp))
 
+                        // Campo de senha com toggle de visibilidade
                         TextField(
                             value = newPasswordValue,
                             onValueChange = { newPasswordValue = it },
-                            placeholder = { Text("Senha*", color = Color.Gray,style = typography.labelMedium) },
+                            placeholder = { Text("Senha*", color = Color.Gray, style = typography.labelMedium) },
                             singleLine = true,
                             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                             trailingIcon = {
+                                // Botão para mostrar/esconder senha
                                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
                                     Icon(
                                         imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
@@ -583,6 +616,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
 
                         Spacer(Modifier.height(12.dp))
 
+                        // Campo de descrição com limite de caracteres
                         TextField(
                             value = newPasswordDescription,
                             onValueChange = {
@@ -592,12 +626,11 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                 }
                             },
                             placeholder = { Text("Descrição ", color = Color.Gray, style = typography.labelMedium) },
-                            singleLine = false, // Permite múltiplas linhas para visualização
+                            singleLine = false, // Permite múltiplas linhas
                             maxLines = 3, // Limita a 3 linhas visíveis
                             keyboardOptions = KeyboardOptions(
-                                imeAction = ImeAction.Next // Faz o Enter do teclado ir para o próximo campo
+                                imeAction = ImeAction.Next // Configura ação do teclado
                             ),
-
                             colors = TextFieldDefaults.textFieldColors(
                                 textColor = Color.White,
                                 backgroundColor = Color.Transparent,
@@ -652,11 +685,14 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
 
                     Spacer(Modifier.height(24.dp))
 
+                    // Botão para criar/salvar a nova senha
                     Button(
                         onClick = {
+                            // Esconde o teclado virtual e limpa o foco
                             keyboardController?.hide()
                             focusManager.clearFocus()
 
+                            // Validação dos campos obrigatórios
                             if (newPasswordTitle.isBlank() || newPasswordValue.isBlank() || newLoginValue.isBlank()) {
                                 Toast.makeText(
                                     context,
@@ -666,6 +702,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                 return@Button
                             }
 
+                            // Função para gerar um token de acesso aleatório
                             fun generateAccessToken(length: Int = 256): String {
                                 val charset =
                                     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
@@ -674,6 +711,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                     .joinToString("")
                             }
 
+                            // Cria o novo objeto PasswordItem com os dados do formulário
                             val newItem = PasswordItem(
                                 title = newPasswordTitle,
                                 login = newLoginValue,
@@ -681,14 +719,17 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                 description = newPasswordDescription,
                                 category = newPasswordCategory,
                                 url = newPasswordUrl,
-                                accessToken = generateAccessToken()
+                                accessToken = generateAccessToken() // Gera token seguro
                             )
 
+                            // Tenta adicionar a nova senha no ViewModel
                             coroutineScope.launch {
                                 try {
                                     viewModel.addPassword(newItem)
                                     Toast.makeText(context, "Senha adicionada", Toast.LENGTH_SHORT)
                                         .show()
+
+                                    // Reseta os campos após sucesso
                                     newPasswordTitle = ""
                                     newLoginValue = ""
                                     newPasswordUrl = ""
@@ -705,11 +746,12 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                 }
                             }
                         },
+                        // Estilização do botão
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFFFF00)),
                         shape = RoundedCornerShape(50.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .navigationBarsPadding() // Padding para a barra de navegação
+                            .navigationBarsPadding() // Ajuste para barra de navegação
                     ) {
                         Text("Criar", color = Color.Black, fontWeight = FontWeight.Bold)
                     }
@@ -718,7 +760,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
         }
     }
 
-// Modal de Edição de Senha - Atualizado com as mesmas melhorias
+    // Modal/Dialog para edição de senha existente
     if (showEditPasswordDialog && editingPassword != null) {
         var passwordVisible by remember { mutableStateOf(false) }
         val scrollState = rememberScrollState()
@@ -726,13 +768,14 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
         val keyboardController = LocalSoftwareKeyboardController.current
         val coroutineScope = rememberCoroutineScope()
 
-        // Configuração para ajustar o layout quando o teclado aparece
+        // Ajuste para quando o teclado virtual aparece
         val imePadding = WindowInsets.ime.asPaddingValues()
 
         Dialog(
             onDismissRequest = {
                 showEditPasswordDialog = false
                 editingPassword = null
+                // Reseta todos os campos ao fechar
                 newPasswordTitle = ""
                 newLoginValue = ""
                 newPasswordValue = ""
@@ -744,16 +787,17 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
             Box(
                 modifier = Modifier
                     .padding(horizontal = 44.dp)
-                    .imePadding() // Adiciona padding para o teclado
+                    .imePadding() // Padding para o teclado
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .verticalScroll(scrollState)
-                        .nestedScroll(rememberNestedScrollInteropConnection())// Comportamento otimizado para teclado
+                        .nestedScroll(rememberNestedScrollInteropConnection()) // Melhora interação com teclado
                         .background(Color(0xFF1C1C1E), shape = RoundedCornerShape(20.dp))
                         .padding(20.dp)
                 ) {
+                    // Título do diálogo de edição
                     Box(
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center
@@ -766,6 +810,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                         )
                     }
 
+                    // Seletor de categoria (similar ao do diálogo de adição)
                     Text("Categoria", color = Color.Gray, style = typography.labelMedium)
                     Box(modifier = Modifier.fillMaxWidth()) {
                         Text(
@@ -773,7 +818,6 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                             color = if (newPasswordCategory.isEmpty()) Color.Gray else Color.White,
                             modifier = Modifier
                                 .clickable { categoryExpanded = true }
-
                                 .padding(vertical = 16.dp)
                         )
                         IconButton(
@@ -813,7 +857,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     Divider(color = Color(0xFFFFFF00), thickness = 1.dp)
                     Spacer(Modifier.height(8.dp))
 
-                    // Campos do formulário com onFocusChanged
+                    // Campos do formulário de edição (similar ao de adição)
                     Column(modifier = Modifier.padding(bottom = imePadding.calculateBottomPadding())) {
                         TextField(
                             value = newPasswordTitle,
