@@ -106,7 +106,7 @@ fun ForgotPasswordScreen(fromLogin: Boolean) {
 
             Button(
                 onClick = {
-                    
+
                     if (email.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
                         emailError = true
                         return@Button
