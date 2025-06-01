@@ -1,5 +1,7 @@
+// Define o pacote da aplicação
 package com.example.superid.homepages
 
+// Importações necessárias para o funcionamento do código
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -10,7 +12,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
@@ -59,17 +60,23 @@ import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.text.input.ImeAction
 import kotlinx.coroutines.launch
 
+// Componente principal da página de senhas
 @Composable
 fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = viewModel()) {
+    // Contexto atual para Toasts e outros recursos Android
     val context = LocalContext.current
+
+    // Observa as listas de senhas e categorias do ViewModel
     val passwords by remember { derivedStateOf { viewModel.passwords } }
     val categories by remember { derivedStateOf { viewModel.categories } }
 
+    // Estados para controlar a exibição dos diálogos
     var showAddPasswordDialog by remember { mutableStateOf(false) }
     var showAddCategoryDialog by remember { mutableStateOf(false) }
     var showEditPasswordDialog by remember { mutableStateOf(false) }
     var showDeleteConfirmation by remember { mutableStateOf(false) }
 
+    // Estados para os campos do formulário
     var newPasswordTitle by remember { mutableStateOf("") }
     var newLoginValue by remember { mutableStateOf("") }
     var newPasswordUrl by remember { mutableStateOf("") }
@@ -80,37 +87,41 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
     var categoryToDelete by remember { mutableStateOf("") }
     var itemToDelete by remember { mutableStateOf<PasswordItem?>(null) }
 
+    // Estados para edição e UI
     var editingPassword by remember { mutableStateOf<PasswordItem?>(null) }
     var categoryExpanded by remember { mutableStateOf(false) }
-
     var isEmailVerified by remember { mutableStateOf(true) }
+
+    // Coroutine scope para operações assíncronas
     val coroutineScope = rememberCoroutineScope()
+
+    // Autenticação Firebase
     val auth = FirebaseAuth.getInstance()
     var emailVerified by remember { mutableStateOf(false) }
+
+    // Estado para rolagem
     val scrollState = rememberScrollState()
+
+    // Tipografia do Material Design 3
     val typography = androidx.compose.material3.MaterialTheme.typography
 
-    // Função para reenviar o email de verificação
+    // Função para reenviar email de verificação
     fun resendVerificationEmail() {
-        // Obtém o usuário atual autenticado
         val user = auth.currentUser
         if (user == null) {
             Toast.makeText(context, "Erro: Usuário não encontrado", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // Envia o email de verificação
         user.sendEmailVerification()
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    // Mostra mensagem de sucesso
                     Toast.makeText(
                         context,
                         "Email de verificação enviado para ${user.email}",
                         Toast.LENGTH_LONG
                     ).show()
                 } else {
-                    // Trata diferentes tipos de erros
                     val error = task.exception?.message ?: "Erro desconhecido"
                     val message = when {
                         error.contains("network", true) -> "Falha de rede. Verifique sua conexão"
@@ -121,22 +132,20 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
             }
     }
 
-// Efeito para verificar se o email foi verificado
+    // Efeito para verificar status de verificação de email
     LaunchedEffect(Unit) {
         val user = FirebaseAuth.getInstance().currentUser
-        // Recarrega o usuário para verificar o status de verificação do email
         user?.reload()?.addOnCompleteListener { task ->
             isEmailVerified = task.isSuccessful && user.isEmailVerified
         }
     }
 
-// Diálogo de confirmação para exclusão
+    // Diálogo de confirmação de exclusão
     if (showDeleteConfirmation) {
         Dialog(
             onDismissRequest = { showDeleteConfirmation = false },
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
-            // Layout do diálogo
             Box(
                 modifier = Modifier
                     .width(300.dp)
@@ -144,7 +153,6 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     .padding(20.dp)
             ) {
                 Column {
-                    // Título do diálogo
                     Text(
                         "Confirmar Exclusão",
                         color = Color(0xFFFFFF00),
@@ -152,7 +160,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
 
-                    // Mensagem dinâmica baseada no que está sendo excluído (categoria ou item)
+                    // Mensagem dinâmica baseada no que está sendo excluído
                     val message = if (categoryToDelete.isNotEmpty()) {
                         "Tem certeza que deseja excluir a categoria '$categoryToDelete' e TODAS as senhas nela contidas?"
                     } else {
@@ -222,7 +230,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
         }
     }
 
-// Layout principal da tela
+    // Layout principal da tela
     Column(
         modifier = Modifier
             .padding(vertical = 24.dp)
@@ -649,7 +657,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                 }
                         )
 
-// Adicione este texto abaixo do campo para mostrar o contador de caracteres
+                        // Contador de caracteres para a descrição
                         Text(
                             text = "${newPasswordDescription.length}/100",
                             color = if (newPasswordDescription.length == 100) Color.Red else Color.Gray,
@@ -659,6 +667,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
 
                         Spacer(Modifier.height(8.dp))
 
+                        // Campo para URL do site
                         TextField(
                             value = newPasswordUrl,
                             onValueChange = { newPasswordUrl = it },
@@ -907,11 +916,11 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                 }
                         )
 
-                        Spacer(Modifier.height(12.dp))
+                        Spacer(Modifier.height(12.dp)) // Espaço entre os elementos
 
                         TextField(
                             value = newPasswordValue,
-                            onValueChange = { newPasswordValue = it },
+                            onValueChange = { newPasswordValue = it }, // Atualiza o estado da senha
                             placeholder = { Text("Senha*", color = Color.Gray, style = typography.labelMedium) },
                             singleLine = true,
                             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -933,7 +942,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                             ),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .onFocusChanged { focusState ->
+                                .onFocusChanged { focusState -> // Rola a tela quando o campo ganha foco
                                     if (focusState.isFocused) {
                                         coroutineScope.launch {
                                             scrollState.scrollTo(scrollState.maxValue)
@@ -976,7 +985,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                         )
                     }
 
-                        Spacer(Modifier.height(24.dp))
+                    Spacer(Modifier.height(24.dp))
 
                     Button(
                         onClick = {
@@ -1034,7 +1043,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
         }
     }
 
-    // Modal de Nova Categoria - CORRIGIDO
+    // Modal de Nova Categoria
     if (showAddCategoryDialog) {
         val scrollState = rememberScrollState()
 
@@ -1137,37 +1146,42 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
     }
 }
 
-
+// Componente reutilizável para exibir um card de senha
 @Composable
 fun PasswordCard(
     item: PasswordItem,
     onDelete: () -> Unit,
     onEdit: () -> Unit
 ) {
+    // Estados para controlar a expansão e visibilidade da senha
     var isExpanded by remember { mutableStateOf(false) }
     var showPassword by remember { mutableStateOf(false) }
 
+    // Layout do card
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 28.dp, vertical = 8.dp)
-            .clickable { isExpanded = !isExpanded },
+            .clickable { isExpanded = !isExpanded }, // Alterna expansão ao clicar
         backgroundColor = Color(0xFF252525),
         shape = RoundedCornerShape(12.dp),
         elevation = 4.dp
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
+            // Linha superior com título e senha
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
+                // Linha esquerda (título e senha)
                 Row(
                     modifier = Modifier
                         .weight(1f)
                         .padding(horizontal = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Título da senha
                     Text(
                         text = item.title,
                         color = Color.White,
@@ -1175,6 +1189,7 @@ fun PasswordCard(
                         modifier = Modifier.weight(1f)
                     )
 
+                    // Divisor visual
                     Box(
                         modifier = Modifier
                             .fillMaxHeight()
@@ -1183,6 +1198,7 @@ fun PasswordCard(
                             .padding(horizontal = 8.dp)
                     )
 
+                    // Senha (mostra/oculta)
                     Text(
                         text = if (showPassword) item.password else item.password.replace(Regex("."), "•"),
                         color = Color.White,
@@ -1192,6 +1208,7 @@ fun PasswordCard(
                             .padding(start = 16.dp)
                     )
 
+                    // Botão para alternar visibilidade da senha
                     IconButton(
                         onClick = { showPassword = !showPassword },
                         modifier = Modifier.size(24.dp)
@@ -1204,7 +1221,9 @@ fun PasswordCard(
                     }
                 }
 
+                // Linha direita (botões de ação)
                 Row {
+                    // Botão de edição
                     IconButton(onClick = onEdit) {
                         Image(
                             painter = painterResource(id = R.drawable.btn_edit),
@@ -1213,6 +1232,7 @@ fun PasswordCard(
                         )
                     }
 
+                    // Botão de exclusão
                     IconButton(onClick = onDelete) {
                         Image(
                             painter = painterResource(id = R.drawable.btn_exclude),
@@ -1223,18 +1243,21 @@ fun PasswordCard(
                 }
             }
 
+            // Área expandida com detalhes adicionais
             if (isExpanded) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 8.dp, start = 8.dp)
                 ) {
+                    // Exibe o login associado
                     Text(
                         text = "Login: ${item.login}",
                         color = Color.Gray,
                         fontSize = 14.sp
                     )
                     Spacer(modifier = Modifier.height(4.dp))
+                    // Exibe a descrição (se houver)
                     Text(
                         text = "Descrição: ${item.description}",
                         color = Color.Gray,

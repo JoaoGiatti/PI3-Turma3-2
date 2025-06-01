@@ -350,7 +350,7 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
 
                 }
             }
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(4.dp)) // Espacamento
             Divider(color = Color.DarkGray, thickness = 1.dp)
 
             // Espaço extra para o botão não cobrir conteúdo
