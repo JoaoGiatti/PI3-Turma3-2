@@ -1,5 +1,7 @@
+// Declaração do pacote
 package com.example.superid
 
+// Importações necessárias
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
@@ -33,9 +35,13 @@ import java.security.Key
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 
+/**
+ * Activity responsável pela tela de cadastro de usuário
+ */
 class SignInActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Define o conteúdo da tela usando Compose
         setContent {
             SuperIDTheme {
                 SignInScreen()
@@ -44,6 +50,11 @@ class SignInActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Função para criptografar senhas usando AES
+ * ATENÇÃO: Esta implementação usa uma chave fixa (insegura para produção)
+ * Em um app real, use Android Keystore ou outra solução segura
+ */
 fun encryptPassword(password: String): String {
     val secretKey = "1234567890123456" // chave AES 16 bytes
     val key: Key = SecretKeySpec(secretKey.toByteArray(), "AES")
@@ -53,6 +64,12 @@ fun encryptPassword(password: String): String {
     return Base64.encodeToString(encryptedBytes, Base64.DEFAULT).trim()
 }
 
+/**
+ * Componente que exibe um requisito de senha com ícone de validação
+ * @param isValid Indica se o requisito foi atendido
+ * @param text Texto descritivo do requisito
+ * @param colors Esquema de cores do tema
+ */
 @Composable
 fun PasswordRequirementItem(
     isValid: Boolean,
@@ -82,29 +99,41 @@ fun PasswordRequirementItem(
     }
 }
 
+/**
+ * Tela de cadastro de usuário
+ */
 @Composable
 fun SignInScreen() {
+    // Contexto atual para acesso a recursos Android
     val context = LocalContext.current
+    // Instância do Firebase Authentication
     val auth = FirebaseAuth.getInstance()
+    // Instância do Firestore para operações com banco de dados
     val firestore = FirebaseFirestore.getInstance()
+    // Verifica se o tema escuro está ativo
     val isDarkTheme = isSystemInDarkTheme()
 
+    // Estados para os campos do formulário
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
+    // Estados para controle da UI
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
 
+    // Estados para mensagens de erro de validação
     var nameError by remember { mutableStateOf("") }
     var emailError by remember { mutableStateOf("") }
     var passwordError by remember { mutableStateOf("") }
 
+    // Estados para rolagem e tema
     val scrollState = rememberScrollState()
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
+    // Layout principal da tela
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = colors.background
@@ -118,7 +147,7 @@ fun SignInScreen() {
         ) {
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Na parte do cabeçalho, volte com o código original:
+            // Cabeçalho com botão de voltar e logo
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 val imageResArrow = if (isDarkTheme) R.drawable.arrowback else R.drawable.arrowbackblack
                 Image(
@@ -139,12 +168,13 @@ fun SignInScreen() {
 
             Spacer(modifier = Modifier.height(72.dp))
 
+            // Títulos da tela
             Text("Você é novo?", style = typography.labelMedium, color = colors.onBackground)
             Text("Vamos te cadastrar!", style = typography.titleLarge, color = colors.onBackground)
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Nome
+            // Campo de nome completo
             Text("Nome completo:", style = typography.labelMedium, color = colors.onBackground)
             Spacer(modifier = Modifier.height(10.dp))
             OutlinedTextField(
@@ -172,7 +202,7 @@ fun SignInScreen() {
 
             Spacer(modifier = Modifier.height(18.dp))
 
-            // Email
+            // Campo de e-mail
             Text("Seu melhor e-mail:", style = typography.labelMedium, color = colors.onBackground)
             Spacer(modifier = Modifier.height(10.dp))
             OutlinedTextField(
@@ -200,7 +230,7 @@ fun SignInScreen() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Senha
+            // Campo de senha
             Text("Crie uma senha segura:", style = typography.labelMedium, color = colors.onBackground)
             Spacer(modifier = Modifier.height(10.dp))
             OutlinedTextField(
@@ -233,7 +263,7 @@ fun SignInScreen() {
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier=Modifier.height(4.dp))
-            // Validação da senha
+            // Validação visual dos requisitos da senha
             Column(modifier = Modifier.padding(top = 4.dp)) {
                 PasswordRequirementItem(
                     isValid = password.length >= 6,
@@ -263,11 +293,13 @@ fun SignInScreen() {
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // Botão de cadastro
             Button(
                 onClick = {
                     var isValid = true
                     errorMessage = ""
 
+                    // Validação dos campos
                     if (name.isBlank()) {
                         nameError = "Nome obrigatório"
                         isValid = false
@@ -297,6 +329,7 @@ fun SignInScreen() {
                         isLoading = true
                         val encryptedPassword = encryptPassword(password)
 
+                        // Criação de usuário no Firebase Auth
                         auth.createUserWithEmailAndPassword(email, password)
                             .addOnCompleteListener { task ->
                                 isLoading = false
@@ -304,6 +337,7 @@ fun SignInScreen() {
                                     val uid = auth.currentUser?.uid ?: return@addOnCompleteListener
                                     val androidId = Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
 
+                                    // Dados do usuário para salvar no Firestore
                                     val userData = hashMapOf(
                                         "UID" to uid,
                                         "IMEI" to androidId,
@@ -312,10 +346,12 @@ fun SignInScreen() {
                                         "senhaMestre" to encryptedPassword
                                     )
 
+                                    // Salva os dados no Firestore
                                     firestore.collection("users_data")
                                         .document(uid)
                                         .set(userData)
                                         .addOnSuccessListener {
+                                            // Envia e-mail de verificação
                                             auth.currentUser?.sendEmailVerification()?.addOnCompleteListener { verifyTask ->
                                                 if (verifyTask.isSuccessful) {
                                                     context.startActivity(Intent(context, EmailVerificationActivity::class.java))
@@ -352,6 +388,7 @@ fun SignInScreen() {
                 }
             }
 
+            // Exibe mensagem de erro se houver
             if (errorMessage.isNotEmpty()) {
                 Text(
                     text = errorMessage,

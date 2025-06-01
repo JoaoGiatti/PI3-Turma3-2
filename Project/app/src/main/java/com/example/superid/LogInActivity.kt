@@ -1,5 +1,7 @@
+// Declaração do pacote
 package com.example.superid
 
+// Importações necessárias
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
@@ -30,9 +32,13 @@ import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.*
 import com.google.firebase.firestore.FirebaseFirestore
 
+/**
+ * Activity responsável pela tela de login
+ */
 class LogInActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Define o conteúdo da tela usando Compose
         setContent {
             SuperIDTheme {
                 LogInScreen()
@@ -41,26 +47,38 @@ class LogInActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Tela de login composable
+ */
 @Composable
 fun LogInScreen() {
+    // Contexto atual para acesso a recursos Android
     val context = LocalContext.current
+    // Instância do Firebase Authentication
     val auth = FirebaseAuth.getInstance()
+    // Estado para rolagem da tela
     val scrollState = rememberScrollState()
+    // Instância do Firestore para operações com banco de dados
     val db = FirebaseFirestore.getInstance()
 
-
+    // Estados para os campos de email e senha
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    // Estado para visibilidade da senha
     var passwordVisible by remember { mutableStateOf(false) }
 
+    // Estados para erros de validação
     var emailError by remember { mutableStateOf(false) }
     var passwordError by remember { mutableStateOf(false) }
 
+    // Cores e tipografia do tema
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
+    // Verifica se o tema escuro está ativo
     val isDarkTheme = isSystemInDarkTheme()
 
+    // Layout principal da tela
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = colors.background
@@ -74,10 +92,12 @@ fun LogInScreen() {
         ) {
             Spacer(modifier = Modifier.height(10.dp))
 
+            // Linha com botão de voltar e logo
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
+                // Seleciona a imagem da seta de voltar baseado no tema
                 val imageResArrow = if (isDarkTheme) {
                     R.drawable.arrowback
                 } else {
@@ -92,6 +112,7 @@ fun LogInScreen() {
                 )
                 Spacer(modifier = Modifier.width(72.dp))
 
+                // Seleciona o logo baseado no tema
                 val imageResLogo = if (isDarkTheme) {
                     R.drawable.superidlogowhiteyellow
                 } else {
@@ -106,6 +127,7 @@ fun LogInScreen() {
 
             Spacer(modifier = Modifier.height(72.dp))
 
+            // Títulos de boas-vindas
             Text(
                 text = "Vamos fazer seu login",
                 color = colors.onBackground,
@@ -122,6 +144,7 @@ fun LogInScreen() {
 
             Spacer(modifier = Modifier.height(60.dp))
 
+            // Campo de email
             Text(
                 text = "Seu Email Mestre:",
                 color = colors.onBackground,
@@ -164,6 +187,7 @@ fun LogInScreen() {
 
             Spacer(modifier = Modifier.height(18.dp))
 
+            // Campo de senha
             Text(
                 text = "Sua Senha Mestre:",
                 color = colors.onBackground,
@@ -215,6 +239,7 @@ fun LogInScreen() {
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Botão "Esqueceu a senha?"
             TextButton(
                 onClick = {
                     val intent = Intent(context, ForgotPasswordActivity::class.java).apply {
@@ -235,8 +260,10 @@ fun LogInScreen() {
 
             Spacer(modifier = Modifier.height(34.dp))
 
+            // Botão de login
             Button(
                 onClick = {
+                    // Validação dos campos
                     var valid = true
                     if (email.isBlank()) {
                         emailError = true
@@ -248,12 +275,14 @@ fun LogInScreen() {
                     }
 
                     if (valid) {
+                        // Tentativa de login com Firebase Auth
                         auth.signInWithEmailAndPassword(email, password)
                             .addOnCompleteListener { task ->
                                 if (task.isSuccessful) {
                                     val user = auth.currentUser
                                     val encryptedPassword = encryptPassword(password)
 
+                                    // Atualiza a senha no Firestore
                                     db.collection("users_data")
                                         .document(user?.uid ?: "")
                                         .update("senhaMestre", encryptedPassword)
@@ -273,6 +302,7 @@ fun LogInScreen() {
                                             ).show()
                                         }
                                 } else {
+                                    // Tratamento de erros específicos
                                     val message = when (val e = task.exception) {
                                         is FirebaseAuthInvalidCredentialsException,
                                         is FirebaseAuthInvalidUserException -> "Email ou senha não encontrado."
@@ -299,6 +329,7 @@ fun LogInScreen() {
 
             Spacer(modifier = Modifier.height(64.dp))
 
+            // Link para cadastro
             Row(
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
@@ -321,6 +352,7 @@ fun LogInScreen() {
             Divider(color = colors.primary, thickness = 1.dp)
             Spacer(modifier = Modifier.height(12.dp))
 
+            // Termos de serviço e política de privacidade
             Text(
                 text = "Ao continuar você concorda com os Termos de Serviço e Política de Privacidade ",
                 color = colors.outline,

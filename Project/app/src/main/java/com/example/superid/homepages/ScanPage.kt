@@ -1,5 +1,7 @@
+// Declaração do pacote
 package com.example.superid.homepages
 
+// Importações de bibliotecas Android e Compose
 import android.Manifest
 import android.content.pm.PackageManager
 import android.util.Size
@@ -32,13 +34,22 @@ import com.example.superid.R
 import com.google.firebase.auth.FirebaseAuth
 import androidx.camera.core.Preview as CameraPreview
 
+/**
+ * Tela de escaneamento de QR Code
+ * @param modifier Modificador para personalização do layout
+ */
 @Composable
 fun ScanPage(modifier: Modifier = Modifier) {
+    // Estado para armazenar o código QR lido
     var code by remember { mutableStateOf("") }
+    // Contexto atual da aplicação
     val context = LocalContext.current
+    // Dono do ciclo de vida atual (Activity/Fragment)
     val lifecycleOwner = LocalLifecycleOwner.current
+    // Futuro provedor da câmera
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
 
+    // Estado para verificar permissão da câmera
     var hasCameraPermission by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(
@@ -48,11 +59,16 @@ fun ScanPage(modifier: Modifier = Modifier) {
         )
     }
 
+    // Estados para verificação de e-mail
     var isEmailVerified by remember { mutableStateOf(false) }
     var isLoadingVerification by remember { mutableStateOf(true) }
 
+    // Instância do Firebase Authentication
     val auth = FirebaseAuth.getInstance()
 
+    /**
+     * Função para reenviar e-mail de verificação
+     */
     fun resendVerificationEmail() {
         val user = auth.currentUser
         if (user == null) {
@@ -80,7 +96,7 @@ fun ScanPage(modifier: Modifier = Modifier) {
             }
     }
 
-    // Verifica se o e-mail está validado
+    // Efeito para verificar se o e-mail está validado
     LaunchedEffect(Unit) {
         val user = auth.currentUser
         if (user != null) {
@@ -97,20 +113,25 @@ fun ScanPage(modifier: Modifier = Modifier) {
         }
     }
 
+    // Launcher para solicitar permissão da câmera
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { granted -> hasCameraPermission = granted }
     )
 
+    // Efeito para solicitar permissão da câmera quando a tela é carregada
     LaunchedEffect(true) {
         launcher.launch(Manifest.permission.CAMERA)
     }
 
+    // Layout principal da tela
     Box(modifier = modifier.fillMaxSize()) {
         // Exibe câmera apenas se tiver permissão e e-mail estiver verificado
         if (hasCameraPermission && isEmailVerified) {
+            // View para visualização da câmera
             val previewView = remember { PreviewView(context) }
 
+            // Efeito para configurar e gerenciar o ciclo de vida da câmera
             DisposableEffect(lifecycleOwner) {
                 val cameraProvider = cameraProviderFuture.get()
                 val preview = CameraPreview.Builder().build()
@@ -119,11 +140,13 @@ fun ScanPage(modifier: Modifier = Modifier) {
                     .build()
                 preview.setSurfaceProvider(previewView.surfaceProvider)
 
+                // Configuração da análise de imagem para QR Code
                 val imageAnalysis = ImageAnalysis.Builder()
                     .setTargetResolution(Size(previewView.width, previewView.height))
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .build()
 
+                // Analisador de QR Code
                 imageAnalysis.setAnalyzer(
                     ContextCompat.getMainExecutor(context),
                     QrCodeAnalizer(context) { result ->
@@ -135,6 +158,7 @@ fun ScanPage(modifier: Modifier = Modifier) {
                 )
 
                 try {
+                    // Vincula os casos de uso da câmera ao ciclo de vida
                     cameraProvider.bindToLifecycle(
                         lifecycleOwner,
                         selector,
@@ -145,11 +169,13 @@ fun ScanPage(modifier: Modifier = Modifier) {
                     e.printStackTrace()
                 }
 
+                // Limpeza quando o efeito é descartado
                 onDispose {
                     cameraProvider.unbindAll()
                 }
             }
 
+            // Exibe a visualização da câmera usando AndroidView
             AndroidView(
                 factory = { previewView },
                 modifier = Modifier.fillMaxSize()
@@ -165,6 +191,7 @@ fun ScanPage(modifier: Modifier = Modifier) {
                     .clickable { resendVerificationEmail() },
                 contentAlignment = Alignment.Center
             ) {
+                // Card de alerta
                 Card(
                     shape = RoundedCornerShape(20.dp),
                     backgroundColor = MaterialTheme.colors.error,
@@ -173,12 +200,14 @@ fun ScanPage(modifier: Modifier = Modifier) {
                         .padding(24.dp)
                         .wrapContentSize()
                 ) {
+                    // Conteúdo do card
                     Column(
                         modifier = Modifier
                             .padding(24.dp)
                             .widthIn(min = 250.dp, max = 320.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        // Ícone de alerta
                         Image(
                             painter = painterResource(id = R.drawable.alert),
                             contentDescription = "Alerta",
@@ -187,6 +216,7 @@ fun ScanPage(modifier: Modifier = Modifier) {
 
                         Spacer(modifier = Modifier.height(16.dp))
 
+                        // Título do alerta
                         Text(
                             text = "Valide seu email",
                             style = MaterialTheme.typography.h6,
@@ -197,6 +227,7 @@ fun ScanPage(modifier: Modifier = Modifier) {
 
                         Spacer(modifier = Modifier.height(8.dp))
 
+                        // Mensagem explicativa
                         Text(
                             text = "É necessário validar seu e-mail para usar a função de login sem senha.",
                             style = MaterialTheme.typography.body2,
@@ -206,6 +237,7 @@ fun ScanPage(modifier: Modifier = Modifier) {
 
                         Spacer(modifier = Modifier.height(16.dp))
 
+                        // Instrução para reenviar e-mail
                         Text(
                             text = "Toque em qualquer lugar para reenviar o e-mail",
                             style = MaterialTheme.typography.caption,
