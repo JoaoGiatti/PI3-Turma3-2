@@ -24,38 +24,42 @@ import androidx.compose.ui.unit.dp
 import com.example.superid.ui.theme.SuperIDTheme
 import kotlinx.coroutines.launch
 
+// Activity principal que exibe a introdução do app
 class IntroActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Define o conteúdo da Activity usando Compose e aplica o tema personalizado
         setContent {
             SuperIDTheme {
-                IntroScreen()
+                IntroScreen()  // Composable da tela de introdução
             }
         }
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class)  // Habilita APIs experimentais do Foundation (como HorizontalPager)
 @Composable
 fun IntroScreen() {
-    val context = LocalContext.current
-    val pagerState = rememberPagerState(initialPage = 0, pageCount = { 4 })
-    val scope = rememberCoroutineScope()
-    val colors = MaterialTheme.colorScheme
-    val typography = MaterialTheme.typography
-    val isDarkTheme = isSystemInDarkTheme()
+    val context = LocalContext.current  // Contexto atual para iniciar intents etc.
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { 4 })  // Estado do pager com 4 páginas
+    val scope = rememberCoroutineScope()  // CoroutineScope para animações
+    val colors = MaterialTheme.colorScheme  // Paleta de cores do tema atual
+    val typography = MaterialTheme.typography  // Tipografia do tema atual
+    val isDarkTheme = isSystemInDarkTheme()  // Verifica se o sistema está em tema escuro
 
     Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = colors.background
+        modifier = Modifier.fillMaxSize(),  // Preenche toda a tela
+        color = colors.background  // Cor de fundo do tema
     ) {
+        // Coluna que organiza o layout verticalmente
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 24.dp, vertical = 16.dp)
                 .padding(bottom = 48.dp),
-            verticalArrangement = Arrangement.SpaceBetween
+            verticalArrangement = Arrangement.SpaceBetween  // Espaça os elementos entre si, ocupando toda altura
         ) {
+            // Linha para o logo no topo da tela
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -63,36 +67,37 @@ fun IntroScreen() {
                     .padding(horizontal = 16.dp)
                     .padding(top = 52.dp)
             ) {
+                Spacer(modifier = Modifier.weight(1f))  // Espaço flexível para centralizar o logo
 
-
-                Spacer(modifier = Modifier.weight(1f))
-
+                // Seleciona o logo conforme tema (claro ou escuro)
                 val imageResLogo = if (isDarkTheme) {
-                    R.drawable.superidlogowhiteyellow  // logo para fundo escuro
+                    R.drawable.superidlogowhiteyellow  // Logo para fundo escuro
                 } else {
-                    R.drawable.superidlogoblackyellow  // logo para fundo claro
+                    R.drawable.superidlogoblackyellow  // Logo para fundo claro
                 }
                 Image(
                     painter = painterResource(id = imageResLogo),
                     contentDescription = "Logo SuperID",
-                    modifier = Modifier.height(24.dp)
+                    modifier = Modifier.height(24.dp)  // Altura fixa do logo
                 )
 
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.weight(1f))  // Espaço flexível para centralizar o logo
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))  // Espaço vertical
 
+            // Pager horizontal para as páginas da introdução (swipe)
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
-            ) { page ->
+                    .weight(1f)  // Ocupa o máximo possível da altura disponível
+            ) { page ->  // Para cada página
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
+                    // Imagem da página de introdução, escolhida conforme o índice
                     Image(
                         painter = when (page) {
                             0 -> painterResource(id = R.drawable.intro1)
@@ -103,12 +108,13 @@ fun IntroScreen() {
                         },
                         contentDescription = "Imagem Intro",
                         modifier = Modifier
-                            .fillMaxWidth(0.9f)
-                            .aspectRatio(1f)
+                            .fillMaxWidth(0.9f)  // Largura 90% da tela
+                            .aspectRatio(1f)     // Mantém proporção 1:1 (quadrada)
                     )
 
-                    Spacer(modifier = Modifier.height(0.dp))
+                    Spacer(modifier = Modifier.height(0.dp))  // Espaço vazio (pode ser removido)
 
+                    // Título do slide conforme página
                     Text(
                         text = when (page) {
                             0 -> "Segurança em 1° Lugar!"
@@ -117,16 +123,17 @@ fun IntroScreen() {
                             3 -> "Vamos Começar!"
                             else -> ""
                         },
-                        style = typography.titleLarge,
+                        style = typography.titleLarge,  // Estilo de título grande do tema
                         modifier = Modifier
                             .padding(horizontal = 16.dp, vertical = 8.dp)
                             .fillMaxWidth(),
-                        textAlign = TextAlign.Left,
+                        textAlign = TextAlign.Left,  // Alinhamento à esquerda
                         color = colors.onBackground
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(12.dp))  // Espaço entre título e texto
 
+                    // Texto descritivo do slide conforme página
                     Text(
                         text = when (page) {
                             0 -> "Armazene todas as suas senhas com segurança em um só lugar, protegidas por criptografia avançada."
@@ -135,7 +142,7 @@ fun IntroScreen() {
                             3 -> "Agora que você já conhece o SuperID, vamos começar com a configuração da sua conta!"
                             else -> ""
                         },
-                        style = typography.bodyLarge,
+                        style = typography.bodyLarge,  // Estilo corpo de texto grande do tema
                         color = colors.onSurfaceVariant,
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
@@ -144,44 +151,53 @@ fun IntroScreen() {
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))  // Espaço abaixo do pager
 
+            // Linha com os "dots" indicadores da página atual
             Row(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
+                // Cria 4 dots, um para cada página
                 repeat(4) { index ->
                     val dotColor = if (pagerState.currentPage == index)
-                        colors.primary else colors.onSurfaceVariant.copy(alpha = 0.5f)
+                        colors.primary  // Cor principal se for página atual
+                    else
+                        colors.onSurfaceVariant.copy(alpha = 0.5f)  // Cor cinza com transparência para as outras
                     Box(
                         modifier = Modifier
                             .padding(4.dp)
                             .size(10.dp)
-                            .background(dotColor, shape = RoundedCornerShape(50))
+                            .background(dotColor, shape = RoundedCornerShape(50))  // Dot circular
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))  // Espaço antes do botão
 
+            // Botão para avançar na introdução ou começar o app
             Button(
                 onClick = {
                     if (pagerState.currentPage < 3) {
+                        // Se não estiver na última página, avança para a próxima com animação
                         scope.launch {
                             pagerState.animateScrollToPage(pagerState.currentPage + 1)
                         }
                     } else {
+                        // Se estiver na última página, inicia a TermsActivity e finaliza esta
                         val intent = Intent(context, TermsActivity::class.java)
+                        // Flags para limpar a pilha e evitar voltar para essa Activity
                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                         context.startActivity(intent)
-                        (context as? ComponentActivity)?.finish()
+                        (context as? ComponentActivity)?.finish()  // Finaliza IntroActivity
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = colors.primary),
-                shape = RoundedCornerShape(50.dp)
+                shape = RoundedCornerShape(50.dp)  // Botão com bordas arredondadas
             ) {
+                // Texto do botão muda entre "Continuar" e "Começar" dependendo da página atual
                 Text(
                     text = if (pagerState.currentPage < 3) "Continuar" else "Começar",
                     style = typography.labelMedium,

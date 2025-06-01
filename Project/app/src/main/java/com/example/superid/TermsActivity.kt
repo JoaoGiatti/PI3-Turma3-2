@@ -1,5 +1,6 @@
 package com.example.superid
 
+
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -25,13 +26,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.superid.ui.theme.SuperIDTheme
 
+// Atividade que exibe os termos de uso
 class TermsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Lê o conteúdo do arquivo de termos
         val termos = resources.openRawResource(R.raw.termos)
             .bufferedReader().use { it.readText() }
 
+        // Define o conteúdo da tela usando o tema personalizado
         setContent {
             SuperIDTheme {
                 TermsScreen(termos)
@@ -42,10 +46,10 @@ class TermsActivity : ComponentActivity() {
 
 @Composable
 fun TermsScreen(termosText: String) {
-    val scrollState = rememberScrollState()
-    var containerHeightPx by remember { mutableStateOf(0) }
+    val scrollState = rememberScrollState() // Estado da rolagem do conteúdo dos termos
+    var containerHeightPx by remember { mutableStateOf(0) } // Altura do contêiner usada para calcular o thumb da barra de rolagem
     val context = LocalContext.current
-    val isDarkTheme = isSystemInDarkTheme()
+    val isDarkTheme = isSystemInDarkTheme() // Verifica se o sistema está em tema escuro
 
     Column(
         modifier = Modifier
@@ -55,18 +59,19 @@ fun TermsScreen(termosText: String) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
+        // Exibe o logo conforme o tema (claro ou escuro)
         val imageResLogo = if (isDarkTheme) {
-            R.drawable.superidlogowhiteyellow  // logo para fundo escuro
+            R.drawable.superidlogowhiteyellow
         } else {
-            R.drawable.superidlogoblackyellow  // logo para fundo claro
+            R.drawable.superidlogoblackyellow
         }
         Image(
             painter = painterResource(id = imageResLogo),
             contentDescription = "Logo SuperID",
-            modifier = Modifier
-                .size(100.dp)
+            modifier = Modifier.size(100.dp)
         )
 
+        // Título principal da tela
         Text(
             text = "Termos de Uso e Privacidade",
             style = MaterialTheme.typography.titleLarge,
@@ -74,16 +79,14 @@ fun TermsScreen(termosText: String) {
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
+        // Caixa contendo os termos com barra de rolagem e scroll customizado
         Box(
             modifier = Modifier
                 .fillMaxWidth(0.9f)
                 .fillMaxHeight(0.70f)
         ) {
-            val colorResBox = if (isDarkTheme) {
-                Color(0xFF3D3D3D) // para tema escuro
-            } else {
-                Color(0xFFC4C4C4) // para tema claro
-            }
+            val colorResBox = if (isDarkTheme) Color(0xFF3D3D3D) else Color(0xFFC4C4C4)
+
             Surface(
                 modifier = Modifier.matchParentSize(),
                 color = colorResBox,
@@ -91,6 +94,7 @@ fun TermsScreen(termosText: String) {
                 tonalElevation = 4.dp
             ) {
                 Row(modifier = Modifier.fillMaxSize()) {
+                    // Coluna do conteúdo com rolagem vertical
                     Box(
                         modifier = Modifier
                             .weight(1f)
@@ -101,6 +105,7 @@ fun TermsScreen(termosText: String) {
                                 .padding(end = 12.dp)
                                 .verticalScroll(scrollState)
                         ) {
+                            // Quebra o texto dos termos em linhas e exibe conforme seu padrão
                             termosText.split("\n").forEach { line ->
                                 when {
                                     line.trim().startsWith("━") -> {
@@ -121,7 +126,9 @@ fun TermsScreen(termosText: String) {
                                     line.trim().matches(Regex("^\\d+\\.\\d+ .+")) -> {
                                         Text(
                                             text = line.trim(),
-                                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = MaterialTheme.typography.titleSmall.fontWeight),
+                                            style = MaterialTheme.typography.bodyMedium.copy(
+                                                fontWeight = MaterialTheme.typography.titleSmall.fontWeight
+                                            ),
                                             color = MaterialTheme.colorScheme.onSurface,
                                             modifier = Modifier.padding(top = 6.dp)
                                         )
@@ -143,11 +150,9 @@ fun TermsScreen(termosText: String) {
                             }
                         }
                     }
-                    val colorRes = if (isDarkTheme) {
-                        Color(0xFF3D3D3D) // para tema escuro
-                    } else {
-                        Color(0xFFABABAB) // para tema claro
-                    }
+
+                    // Barra de rolagem personalizada
+                    val colorRes = if (isDarkTheme) Color(0xFF3D3D3D) else Color(0xFFABABAB)
                     Box(
                         modifier = Modifier
                             .fillMaxHeight()
@@ -157,12 +162,17 @@ fun TermsScreen(termosText: String) {
                                 containerHeightPx = coordinates.size.height
                             }
                     ) {
+                        // Calcula a posição do "scroll thumb"
                         val scrollProgress = scrollState.value.toFloat() / (scrollState.maxValue.toFloat().coerceAtLeast(1f))
                         val density = LocalDensity.current
                         val availableHeight = (containerHeightPx.toFloat() - with(density) { 50.dp.toPx() }).coerceAtLeast(0f)
                         val offsetY = with(density) { (scrollProgress * availableHeight).toDp() }
 
-                        val animatedOffsetY by animateDpAsState(targetValue = offsetY, label = "ScrollThumbOffset")
+                        // Animação do deslocamento vertical do thumb
+                        val animatedOffsetY by animateDpAsState(
+                            targetValue = offsetY,
+                            label = "ScrollThumbOffset"
+                        )
 
                         Box(
                             modifier = Modifier
@@ -176,6 +186,7 @@ fun TermsScreen(termosText: String) {
             }
         }
 
+        // Mensagem de confirmação dos termos
         Text(
             text = "Ao continuar, você concorda com os Termos de Uso e com a nossa política de privacidade.",
             style = MaterialTheme.typography.labelSmall,
@@ -184,14 +195,17 @@ fun TermsScreen(termosText: String) {
             modifier = Modifier.padding(vertical = 8.dp)
         )
 
+        // Botão para aceitar os termos
         Button(
             onClick = {
+                // Salva nas SharedPreferences que os termos foram aceitos
                 val sharedPref = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
                 sharedPref.edit()
                     .putBoolean("tutorial_visto", true)
                     .putBoolean("termos_aceitos", true)
                     .apply()
 
+                // Redireciona para a MainActivity e limpa a pilha de atividades
                 val intent = Intent(context, MainActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 context.startActivity(intent)

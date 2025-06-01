@@ -27,6 +27,7 @@ import com.example.superid.ui.theme.SuperIDTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Define o conteúdo da tela usando o tema do app
         setContent {
             SuperIDTheme {
                 SuperIDScreen()
@@ -45,27 +46,29 @@ fun SuperIDScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colors.background),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(colors.background), // Define o fundo de acordo com o tema
+        verticalArrangement = Arrangement.Center, // Centraliza verticalmente
+        horizontalAlignment = Alignment.CenterHorizontally // Centraliza horizontalmente
     ) {
-
-
+        // Escolhe a logo certa de acordo com o tema (claro ou escuro)
         val imageRes = if (isDarkTheme) {
-            R.drawable.superidlogowhiteyellow  // logo para fundo escuro
+            R.drawable.superidlogowhiteyellow
         } else {
-            R.drawable.superidlogoblackyellow  // logo para fundo claro
+            R.drawable.superidlogoblackyellow
         }
+
+        // Logo do app posicionada no topo da tela
         Image(
             painter = painterResource(id = imageRes),
             contentDescription = "Logo SuperID",
             modifier = Modifier
                 .height(24.dp)
-                .offset { IntOffset(x = 0, y = -180) }
+                .offset { IntOffset(x = 0, y = -180) } // deslocamento para cima
         )
 
         Spacer(modifier = Modifier.height(100.dp))
 
+        // Ícone central ilustrativo
         Image(
             painter = painterResource(id = R.drawable.walletvector),
             contentDescription = "Wallet Icon",
@@ -74,6 +77,7 @@ fun SuperIDScreen() {
 
         Spacer(modifier = Modifier.height(46.dp))
 
+        // Texto descritivo com parte destacada na cor primária
         Text(
             text = buildAnnotatedString {
                 append("Um modo inovador de fazer login ")
@@ -94,8 +98,10 @@ fun SuperIDScreen() {
 
         Spacer(modifier = Modifier.height(32.dp))
 
+        // Botão principal para login
         Button(
             onClick = {
+                // Vai para a tela de login
                 context.startActivity(Intent(context, LogInActivity::class.java))
             },
             colors = ButtonDefaults.buttonColors(
@@ -105,7 +111,7 @@ fun SuperIDScreen() {
             modifier = Modifier
                 .fillMaxWidth(0.8f)
                 .height(42.dp),
-            shape = RoundedCornerShape(50.dp)
+            shape = RoundedCornerShape(50.dp) // Borda arredondada
         ) {
             Text(
                 text = "Entrar na conta",
@@ -115,8 +121,10 @@ fun SuperIDScreen() {
 
         Spacer(modifier = Modifier.height(14.dp))
 
+        // Botão secundário para registro (outlined)
         OutlinedButton(
             onClick = {
+                // Vai para a tela de registro
                 context.startActivity(Intent(context, SignInActivity::class.java))
             },
             colors = ButtonDefaults.outlinedButtonColors(

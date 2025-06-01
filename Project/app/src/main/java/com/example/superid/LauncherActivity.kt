@@ -25,7 +25,7 @@ class LauncherActivity : ComponentActivity() {
         val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         val tutorialVisto = sharedPref.getBoolean("tutorial_visto", false)
         val termosAceitos = sharedPref.getBoolean("termos_aceitos", false)
-
+// Verifica se o tutorial ja foi visto para nao aparecer novamente
         when {
             !tutorialVisto -> startActivity(Intent(this, IntroActivity::class.java))
             !termosAceitos -> startActivity(Intent(this, TermsActivity::class.java))

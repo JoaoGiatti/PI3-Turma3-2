@@ -82,6 +82,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
     var newPasswordUrl by remember { mutableStateOf("") }
     var newPasswordValue by remember { mutableStateOf("") }
     var newPasswordDescription by remember { mutableStateOf("") }
+
     var newPasswordCategory by remember { mutableStateOf(categories.firstOrNull() ?: "") }
     var newCategoryValue by remember { mutableStateOf("") }
     var categoryToDelete by remember { mutableStateOf("") }
@@ -380,9 +381,8 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
 
                             // Mostra botão de excluir apenas para categorias personalizadas
                             if (category != "Sem Categoria" &&
-                                category != "Sites Web" &&
-                                category != "Aplicativos" &&
-                                category != "Teclados de Acesso Físico"
+                                category != "Sites Web"
+
                             ) {
                                 IconButton(
                                     onClick = {
@@ -419,6 +419,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                 newPasswordValue = item.password
                                 newPasswordCategory = item.category
                                 newPasswordDescription = item.description
+                                newPasswordUrl = item.url
                                 showEditPasswordDialog = true
                             }
                         )
@@ -483,7 +484,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     }
 
                     // Seletor de categoria
-                    Text("Categoria", color = Color.Gray, style = typography.labelMedium)
+                    Text("Categoria*", color = Color.Gray, style = typography.labelMedium)
                     Box(modifier = Modifier.fillMaxWidth()) {
                         Text(
                             text = newPasswordCategory.ifEmpty { "Selecione uma categoria" },
@@ -820,7 +821,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                     }
 
                     // Seletor de categoria (similar ao do diálogo de adição)
-                    Text("Categoria", color = Color.Gray, style = typography.labelMedium)
+                    Text("Categoria*", color = Color.Gray, style = typography.labelMedium)
                     Box(modifier = Modifier.fillMaxWidth()) {
                         Text(
                             text = newPasswordCategory.ifEmpty { "Selecione uma categoria*" },
@@ -983,6 +984,28 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                     }
                                 }
                         )
+                        TextField(
+                            value = newPasswordUrl,
+                            onValueChange = { newPasswordUrl = it },
+                            placeholder = { Text("URL do site", color = Color.Gray, style = typography.labelMedium) },
+                            singleLine = true,
+                            colors = TextFieldDefaults.textFieldColors(
+                                textColor = Color.White,
+                                backgroundColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color(0xFFFFFF00),
+                                focusedIndicatorColor = Color(0xFFFFFF00),
+                                cursorColor = Color(0xFFFFFF00)
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onFocusChanged { focusState ->
+                                    if (focusState.isFocused) {
+                                        coroutineScope.launch {
+                                            scrollState.scrollTo(scrollState.maxValue)
+                                        }
+                                    }
+                                }
+                        )
                     }
 
                     Spacer(Modifier.height(24.dp))
@@ -1006,6 +1029,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                 login = newLoginValue,
                                 password = newPasswordValue,
                                 description = newPasswordDescription,
+                                url = newPasswordUrl,
                                 category = newPasswordCategory
                             )
 
@@ -1020,6 +1044,7 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                                     newLoginValue = ""
                                     newPasswordValue = ""
                                     newPasswordDescription = ""
+                                    newPasswordUrl = ""
                                     newPasswordCategory = categories.firstOrNull() ?: ""
                                 } catch (e: Exception) {
                                     Toast.makeText(

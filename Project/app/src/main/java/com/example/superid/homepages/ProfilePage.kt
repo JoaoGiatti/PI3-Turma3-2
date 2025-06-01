@@ -1,6 +1,9 @@
 package com.example.superid.homepages
 
+import android.content.Context
 import android.content.Intent
+import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyProperties
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.Image
@@ -9,7 +12,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -33,7 +35,6 @@ import com.example.superid.profile.ProfileViewModel
 import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -42,20 +43,72 @@ import androidx.compose.material3.TextButton
 import androidx.compose.ui.text.style.TextDecoration
 import com.example.superid.ForgotPasswordActivity
 import com.example.superid.MainActivity
+import java.security.KeyStore
 import javax.crypto.Cipher
-import javax.crypto.spec.SecretKeySpec
-import java.security.Key
+import javax.crypto.KeyGenerator
+import javax.crypto.SecretKey
+import javax.crypto.spec.GCMParameterSpec
 
+/**
+ * Gerenciador de criptografia seguro usando AES-256-GCM com Android Keystore
+ */
+class SecureCryptoManager(context: Context) {
 
-fun decryptPassword(encryptedPassword: String): String {
-    val secretKey = "1234567890123456"
-    val key: Key = SecretKeySpec(secretKey.toByteArray(), "AES")
-    val cipher = Cipher.getInstance("AES")
-    cipher.init(Cipher.DECRYPT_MODE, key)
-    val decodedBytes = Base64.decode(encryptedPassword, Base64.DEFAULT)
-    val decryptedBytes = cipher.doFinal(decodedBytes)
-    return String(decryptedBytes)
+    companion object {
+        private const val ANDROID_KEYSTORE = "AndroidKeyStore"
+        private const val KEY_ALIAS = "SuperID_AES256_Key"
+        private const val TRANSFORMATION = "AES/GCM/NoPadding"
+        private const val IV_SIZE = 12 // GCM recomenda 12 bytes
+        private const val TAG_LENGTH = 128 // bits para autenticação GCM
+    }
 
+    private val keyStore: KeyStore = KeyStore.getInstance(ANDROID_KEYSTORE).apply {
+        load(null)
+    }
+
+    init {
+        if (!keyStore.containsAlias(KEY_ALIAS)) {
+            createKey()
+        }
+    }
+
+    private fun createKey() {
+        val keyGenerator = KeyGenerator.getInstance(
+            KeyProperties.KEY_ALGORITHM_AES,
+            ANDROID_KEYSTORE
+        )
+
+        val keySpec = KeyGenParameterSpec.Builder(
+            KEY_ALIAS,
+            KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+        )
+            .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+            .setKeySize(256)
+            .setUserAuthenticationRequired(false)
+            .setRandomizedEncryptionRequired(true)
+            .build()
+
+        keyGenerator.init(keySpec)
+        keyGenerator.generateKey()
+    }
+
+    private fun getKey(): SecretKey {
+        return (keyStore.getEntry(KEY_ALIAS, null) as KeyStore.SecretKeyEntry).secretKey
+    }
+
+    fun decrypt(encryptedData: String): String {
+        val combined = Base64.decode(encryptedData, Base64.DEFAULT)
+        val iv = combined.copyOfRange(0, IV_SIZE)
+        val encryptedBytes = combined.copyOfRange(IV_SIZE, combined.size)
+
+        val cipher = Cipher.getInstance(TRANSFORMATION)
+        val spec = GCMParameterSpec(TAG_LENGTH, iv)
+        cipher.init(Cipher.DECRYPT_MODE, getKey(), spec)
+
+        val decryptedBytes = cipher.doFinal(encryptedBytes)
+        return String(decryptedBytes, Charsets.UTF_8)
+    }
 }
 
 @Composable
@@ -64,13 +117,15 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
     val context = LocalContext.current
     val colors = MaterialTheme.colors
 
-
     // Estado para verificar se o e-mail está verificado
     var isEmailVerified by remember { mutableStateOf(true) }
 
+    // Inicializa o gerenciador de criptografia
+    val cryptoManager = remember { SecureCryptoManager(context) }
+
     val decryptedPassword = remember(item.senhaMestre) {
         try {
-            decryptPassword(item.senhaMestre)
+            cryptoManager.decrypt(item.senhaMestre)
         } catch (e: Exception) {
             "Erro ao descriptografar"
         }
@@ -100,11 +155,7 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
                     val error = task.exception?.message ?: "Erro desconhecido"
                     val message = when {
                         error.contains("network", true) -> "Falha de rede. Verifique sua conexão"
-                        error.contains(
-                            "too many",
-                            true
-                        ) -> "Muitas tentativas seguidas. Aguarde cerca de 1 minuto antes de tentar novamente."
-
+                        error.contains("too many", true) -> "Muitas tentativas seguidas. Aguarde cerca de 1 minuto antes de tentar novamente."
                         else -> "Falha ao enviar: Muitas tentativas seguidas. Aguarde cerca de 1 minuto antes de tentar novamente."
                     }
                     Toast.makeText(context, message, Toast.LENGTH_LONG).show()
@@ -112,8 +163,7 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
             }
     }
 
-
-        // Verificar o status de verificação do e-mail
+    // Verificar o status de verificação do e-mail
     LaunchedEffect(Unit) {
         val user = FirebaseAuth.getInstance().currentUser
         user?.reload()?.addOnCompleteListener { task ->
@@ -130,9 +180,7 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
             .padding(vertical = 24.dp)
             .fillMaxSize(),
         verticalArrangement = Arrangement.Top
-
     ) {
-
         // Topo: logo
         Box(
             modifier = Modifier
@@ -153,17 +201,15 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
         Divider(
             color = Color.Gray,
             thickness = 1.dp,
-            modifier = Modifier
-                .fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(18.dp))
 
-        // Alerta de verificação de e-mail - AGORA É UM BOTÃO CLICÁVEL
+        // Alerta de verificação de e-mail
         if (!isEmailVerified) {
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Botão para reenviar email de verificação
             Button(
                 onClick = { resendVerificationEmail() },
                 colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.error),
@@ -221,7 +267,6 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
                 color = Color.White,
                 style = MaterialTheme.typography.h6.copy(fontWeight = FontWeight.Bold)
             )
-
         }
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -283,8 +328,7 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
                             text = "Valide seu Email",
                             color = Color.Yellow,
                             style = MaterialTheme.typography.caption,
-                            modifier = Modifier
-                                .clickable { resendVerificationEmail() }
+                            modifier = Modifier.clickable { resendVerificationEmail() }
                         )
                     }
                 }
@@ -295,7 +339,6 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
             // Campo Senha
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Estado para controlar a visibilidade da senha
             var isPasswordVisible by remember { mutableStateOf(false) }
 
             Row(
@@ -347,13 +390,11 @@ fun ProfilePage(viewModel: ProfileViewModel = viewModel()) {
                             style = MaterialTheme.typography.caption.copy(textDecoration = TextDecoration.Underline),
                         )
                     }
-
                 }
             }
-            Spacer(modifier = Modifier.height(4.dp)) // Espacamento
+            Spacer(modifier = Modifier.height(4.dp))
             Divider(color = Color.DarkGray, thickness = 1.dp)
 
-            // Espaço extra para o botão não cobrir conteúdo
             Spacer(modifier = Modifier.height(70.dp))
 
             // Botão Sair

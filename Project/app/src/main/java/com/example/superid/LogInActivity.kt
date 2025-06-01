@@ -2,8 +2,18 @@
 package com.example.superid
 
 // Importações necessárias
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+
+import com.example.superid.SecureCryptoManager
+
+// Remova a declaração completa da classe SecureCryptoManager que está duplicada
+// Mantenha apenas o código do LoginScreen usando a classe importada
+import android.provider.Settings
+import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyProperties
+import android.util.Base64
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -31,6 +41,17 @@ import com.example.superid.ui.theme.SuperIDTheme
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.*
 import com.google.firebase.firestore.FirebaseFirestore
+import java.security.KeyStore
+import javax.crypto.Cipher
+import javax.crypto.KeyGenerator
+import javax.crypto.SecretKey
+import javax.crypto.spec.GCMParameterSpec
+
+/**
+ * Gerenciador de criptografia seguro usando AES-256-GCM com Android Keystore
+ * (Exatamente igual ao usado na página de cadastro)
+ */
+
 
 /**
  * Activity responsável pela tela de login
@@ -60,6 +81,8 @@ fun LogInScreen() {
     val scrollState = rememberScrollState()
     // Instância do Firestore para operações com banco de dados
     val db = FirebaseFirestore.getInstance()
+    // Instância do SecureCryptoManager (igual ao cadastro)
+    val cryptoManager = remember { SecureCryptoManager(context) }
 
     // Estados para os campos de email e senha
     var email by remember { mutableStateOf("") }
@@ -280,7 +303,8 @@ fun LogInScreen() {
                             .addOnCompleteListener { task ->
                                 if (task.isSuccessful) {
                                     val user = auth.currentUser
-                                    val encryptedPassword = encryptPassword(password)
+                                    // Criptografa a senha (igual ao cadastro)
+                                    val encryptedPassword = cryptoManager.encrypt(password)
 
                                     // Atualiza a senha no Firestore
                                     db.collection("users_data")

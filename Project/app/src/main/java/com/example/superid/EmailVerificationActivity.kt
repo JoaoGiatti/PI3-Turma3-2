@@ -1,3 +1,4 @@
+// Importação de pacotes necessários do Android, Compose e Firebase
 package com.example.superid
 
 import android.content.Intent
@@ -21,9 +22,11 @@ import androidx.compose.ui.unit.dp
 import com.google.firebase.auth.FirebaseAuth
 import com.example.superid.ui.theme.SuperIDTheme
 
+// Activity responsável por exibir a tela de verificação de e-mail
 class EmailVerificationActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Define o conteúdo da tela utilizando Compose e o tema da aplicação
         setContent {
             SuperIDTheme {
                 EmailVerificationScreen()
@@ -41,14 +44,17 @@ fun EmailVerificationScreen() {
     var showAlertDialog by remember { mutableStateOf(false) }
     val isDarkTheme = isSystemInDarkTheme()
 
+    // Função chamada ao clicar em "Prosseguir" para checar se o e-mail foi verificado
     fun verifyEmail() {
         user?.reload()?.addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 emailVerified = user?.isEmailVerified == true
                 if (emailVerified) {
+                    // Vai para a tela Home se o e-mail estiver verificado
                     context.startActivity(Intent(context, HomeActivity::class.java))
                     (context as? ComponentActivity)?.finish()
                 } else {
+                    // Mostra mensagem caso o e-mail ainda não tenha sido verificado
                     Toast.makeText(
                         context,
                         "E-mail não confirmado. Verifique sua caixa de entrada!",
@@ -56,21 +62,20 @@ fun EmailVerificationScreen() {
                     ).show()
                 }
             } else {
+                // Mostra erro em caso de falha na verificação
                 Toast.makeText(context, "Erro ao verificar o e-mail.", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
+    // Mostra um alerta se o usuário optar por prosseguir sem verificar o e-mail
     fun proceedWithoutVerification() {
         showAlertDialog = true
     }
 
+    // Exibe o AlertDialog caso o usuário tente prosseguir sem verificação
     if (showAlertDialog) {
-        val colorRes = if (isDarkTheme) {
-            Color(0xFF323232) // para tema escuro
-        } else {
-            Color(0xFFECECEC) // para tema claro
-        }
+        val colorRes = if (isDarkTheme) Color(0xFF323232) else Color(0xFFECECEC)
         AlertDialog(
             onDismissRequest = { showAlertDialog = false },
             containerColor = colorRes,
@@ -85,6 +90,7 @@ fun EmailVerificationScreen() {
             },
             confirmButton = {
                 TextButton(onClick = {
+                    // Vai para a Home mesmo sem e-mail verificado
                     context.startActivity(Intent(context, HomeActivity::class.java))
                     (context as? ComponentActivity)?.finish()
                 }) {
@@ -99,6 +105,7 @@ fun EmailVerificationScreen() {
         )
     }
 
+    // Componente principal da tela
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -111,16 +118,18 @@ fun EmailVerificationScreen() {
         ) {
             Spacer(modifier = Modifier.padding(22.dp))
 
+            // Linha com botão de voltar e logo da aplicação
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Spacer(modifier = Modifier.width(24.dp))
 
+                // Ícone de voltar (diferente para tema claro/escuro)
                 val imageResArrow = if (isDarkTheme) {
-                    R.drawable.arrowback  // logo para fundo escuro
+                    R.drawable.arrowback
                 } else {
-                    R.drawable.arrowbackblack  // logo para fundo claro
+                    R.drawable.arrowbackblack
                 }
                 Image(
                     painter = painterResource(id = imageResArrow),
@@ -131,12 +140,14 @@ fun EmailVerificationScreen() {
                             (context as? ComponentActivity)?.finish()
                         }
                 )
+
                 Spacer(modifier = Modifier.width(72.dp))
 
+                // Logo SuperID (claro ou escuro, conforme o tema)
                 val imageResLogo = if (isDarkTheme) {
-                    R.drawable.superidlogowhiteyellow  // logo para fundo escuro
+                    R.drawable.superidlogowhiteyellow
                 } else {
-                    R.drawable.superidlogoblackyellow  // logo para fundo claro
+                    R.drawable.superidlogoblackyellow
                 }
                 Image(
                     painter = painterResource(id = imageResLogo),
@@ -147,6 +158,7 @@ fun EmailVerificationScreen() {
 
             Spacer(modifier = Modifier.height(44.dp))
 
+            // Título principal
             Text(
                 text = "Te enviamos um email\nde confirmação!",
                 style = MaterialTheme.typography.titleLarge,
@@ -156,8 +168,7 @@ fun EmailVerificationScreen() {
                     .padding(22.dp)
             )
 
-            Spacer(modifier = Modifier.height(1.dp))
-
+            // Subtítulo explicativo
             Text(
                 text = "Confirme a sua identidade antes de prosseguir",
                 style = MaterialTheme.typography.bodyLarge,
@@ -169,6 +180,7 @@ fun EmailVerificationScreen() {
 
             Spacer(modifier = Modifier.height(48.dp))
 
+            // Ícone de email centralizado
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
@@ -182,6 +194,7 @@ fun EmailVerificationScreen() {
 
             Spacer(modifier = Modifier.height(14.dp))
 
+            // Texto explicando o próximo passo
             Text(
                 text = "Após confirmar o email, clique em\nProsseguir.",
                 style = MaterialTheme.typography.bodyLarge,
@@ -191,6 +204,7 @@ fun EmailVerificationScreen() {
 
             Spacer(modifier = Modifier.height(14.dp))
 
+            // Botão "Prosseguir" (verifica se o email foi confirmado)
             Button(
                 onClick = { verifyEmail() },
                 colors = ButtonDefaults.buttonColors(
@@ -210,6 +224,7 @@ fun EmailVerificationScreen() {
                 )
             }
 
+            // Botão "Prosseguir sem verificar"
             Button(
                 onClick = { proceedWithoutVerification() },
                 colors = ButtonDefaults.buttonColors(

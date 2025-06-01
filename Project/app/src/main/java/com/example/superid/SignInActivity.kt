@@ -1,10 +1,11 @@
-// Declaração do pacote
 package com.example.superid
 
-// Importações necessárias
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
+import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyProperties
 import android.util.Base64
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -31,17 +32,77 @@ import androidx.compose.ui.unit.sp
 import com.example.superid.ui.theme.SuperIDTheme
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import java.security.Key
+import java.security.KeyStore
 import javax.crypto.Cipher
-import javax.crypto.spec.SecretKeySpec
+import javax.crypto.KeyGenerator
+import javax.crypto.SecretKey
+import javax.crypto.spec.GCMParameterSpec
 
 /**
- * Activity responsável pela tela de cadastro de usuário
+ * Gerenciador de criptografia seguro usando AES-256-GCM com Android Keystore
  */
+class SecureCryptoManager(context: Context) {
+
+    companion object {
+        private const val ANDROID_KEYSTORE = "AndroidKeyStore"
+        private const val KEY_ALIAS = "SuperID_AES256_Key"
+        private const val TRANSFORMATION = "AES/GCM/NoPadding"
+        private const val IV_SIZE = 12 // GCM recomenda 12 bytes
+        private const val TAG_LENGTH = 128 // bits para autenticação GCM
+    }
+
+    private val keyStore: KeyStore = KeyStore.getInstance(ANDROID_KEYSTORE).apply {
+        load(null)
+    }
+
+    init {
+        if (!keyStore.containsAlias(KEY_ALIAS)) {
+            createKey()
+        }
+    }
+
+    private fun createKey() {
+        val keyGenerator = KeyGenerator.getInstance(
+            KeyProperties.KEY_ALGORITHM_AES,
+            ANDROID_KEYSTORE
+        )
+
+        val keySpec = KeyGenParameterSpec.Builder(
+            KEY_ALIAS,
+            KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+        )
+            .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+            .setKeySize(256)
+            .setUserAuthenticationRequired(false)
+            .setRandomizedEncryptionRequired(true)
+            .build()
+
+        keyGenerator.init(keySpec)
+        keyGenerator.generateKey()
+    }
+
+    private fun getKey(): SecretKey {
+        return (keyStore.getEntry(KEY_ALIAS, null) as KeyStore.SecretKeyEntry).secretKey
+    }
+
+    fun encrypt(data: String): String {
+        val cipher = Cipher.getInstance(TRANSFORMATION)
+        val key = getKey()
+
+        cipher.init(Cipher.ENCRYPT_MODE, key)
+        val iv = cipher.iv
+        val encryptedBytes = cipher.doFinal(data.toByteArray(Charsets.UTF_8))
+
+        // Combine IV + encrypted data
+        val combined = iv + encryptedBytes
+        return Base64.encodeToString(combined, Base64.DEFAULT)
+    }
+}
+
 class SignInActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Define o conteúdo da tela usando Compose
         setContent {
             SuperIDTheme {
                 SignInScreen()
@@ -50,26 +111,6 @@ class SignInActivity : ComponentActivity() {
     }
 }
 
-/**
- * Função para criptografar senhas usando AES
- * ATENÇÃO: Esta implementação usa uma chave fixa (insegura para produção)
- * Em um app real, use Android Keystore ou outra solução segura
- */
-fun encryptPassword(password: String): String {
-    val secretKey = "1234567890123456" // chave AES 16 bytes
-    val key: Key = SecretKeySpec(secretKey.toByteArray(), "AES")
-    val cipher = Cipher.getInstance("AES")
-    cipher.init(Cipher.ENCRYPT_MODE, key)
-    val encryptedBytes = cipher.doFinal(password.toByteArray())
-    return Base64.encodeToString(encryptedBytes, Base64.DEFAULT).trim()
-}
-
-/**
- * Componente que exibe um requisito de senha com ícone de validação
- * @param isValid Indica se o requisito foi atendido
- * @param text Texto descritivo do requisito
- * @param colors Esquema de cores do tema
- */
 @Composable
 fun PasswordRequirementItem(
     isValid: Boolean,
@@ -99,41 +140,31 @@ fun PasswordRequirementItem(
     }
 }
 
-/**
- * Tela de cadastro de usuário
- */
 @Composable
 fun SignInScreen() {
-    // Contexto atual para acesso a recursos Android
     val context = LocalContext.current
-    // Instância do Firebase Authentication
     val auth = FirebaseAuth.getInstance()
-    // Instância do Firestore para operações com banco de dados
     val firestore = FirebaseFirestore.getInstance()
-    // Verifica se o tema escuro está ativo
     val isDarkTheme = isSystemInDarkTheme()
 
-    // Estados para os campos do formulário
+    // Estados do formulário
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-
-    // Estados para controle da UI
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
-
-    // Estados para mensagens de erro de validação
     var nameError by remember { mutableStateOf("") }
     var emailError by remember { mutableStateOf("") }
     var passwordError by remember { mutableStateOf("") }
 
-    // Estados para rolagem e tema
     val scrollState = rememberScrollState()
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
-    // Layout principal da tela
+    // Inicializa o gerenciador de criptografia
+    val cryptoManager = remember { SecureCryptoManager(context) }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = colors.background
@@ -263,7 +294,6 @@ fun SignInScreen() {
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier=Modifier.height(4.dp))
-            // Validação visual dos requisitos da senha
             Column(modifier = Modifier.padding(top = 4.dp)) {
                 PasswordRequirementItem(
                     isValid = password.length >= 6,
@@ -327,7 +357,7 @@ fun SignInScreen() {
 
                     if (isValid) {
                         isLoading = true
-                        val encryptedPassword = encryptPassword(password)
+                        val encryptedPassword = cryptoManager.encrypt(password)
 
                         // Criação de usuário no Firebase Auth
                         auth.createUserWithEmailAndPassword(email, password)
@@ -388,7 +418,6 @@ fun SignInScreen() {
                 }
             }
 
-            // Exibe mensagem de erro se houver
             if (errorMessage.isNotEmpty()) {
                 Text(
                     text = errorMessage,

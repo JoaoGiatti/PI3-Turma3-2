@@ -101,7 +101,7 @@ class QrCodeAnalizer(
                                                                 )
                                                             )
 
-                                                        // gera noco accessToken e atualiza
+                                                        // gera novo accessToken e atualiza
                                                         val newAccessToken = generateAccessToken()
                                                         db.collection("user_passwords").document(uid)
                                                             .collection("passwords")
