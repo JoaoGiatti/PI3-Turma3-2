@@ -45,8 +45,6 @@ import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.imeNestedScroll
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -54,11 +52,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.text.input.ImeAction
-import kotlinx.coroutines.launch
 
 // Componente principal da página de senhas
 @Composable
@@ -382,7 +377,6 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
                             // Mostra botão de excluir apenas para categorias personalizadas
                             if (category != "Sem Categoria" &&
                                 category != "Sites Web"
-
                             ) {
                                 IconButton(
                                     onClick = {
@@ -562,11 +556,17 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
 
                         Spacer(Modifier.height(12.dp))
 
-                        // Campo de login
+                        // Campo de login (modificado para ser opcional em "Teclados de Acesso Físico")
                         TextField(
                             value = newLoginValue,
                             onValueChange = { newLoginValue = it },
-                            placeholder = { Text("Login*", color = Color.Gray, style = typography.labelMedium) },
+                            placeholder = {
+                                Text(
+                                    if (newPasswordCategory == "Teclados de Acesso Físico") "Login (opcional)" else "Login*",
+                                    color = Color.Gray,
+                                    style = typography.labelMedium
+                                )
+                            },
                             singleLine = true,
                             colors = TextFieldDefaults.textFieldColors(
                                 textColor = Color.White,
@@ -695,15 +695,18 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
 
                     Spacer(Modifier.height(24.dp))
 
-                    // Botão para criar/salvar a nova senha
+                    // Botão para criar/salvar a nova senha (com validação modificada)
                     Button(
                         onClick = {
                             // Esconde o teclado virtual e limpa o foco
                             keyboardController?.hide()
                             focusManager.clearFocus()
 
-                            // Validação dos campos obrigatórios
-                            if (newPasswordTitle.isBlank() || newPasswordValue.isBlank() || newLoginValue.isBlank()) {
+                            // Validação modificada para a categoria "Teclados de Acesso Físico"
+                            val isPhysicalKeyboard = newPasswordCategory == "Teclados de Acesso Físico"
+                            val isLoginRequired = !isPhysicalKeyboard && newLoginValue.isBlank()
+
+                            if (newPasswordTitle.isBlank() || newPasswordValue.isBlank() || isLoginRequired) {
                                 Toast.makeText(
                                     context,
                                     "Preencha todos os campos obrigatórios",
@@ -894,10 +897,17 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
 
                         Spacer(Modifier.height(12.dp))
 
+                        // Campo de login modificado para "Teclados de Acesso Físico"
                         TextField(
                             value = newLoginValue,
                             onValueChange = { newLoginValue = it },
-                            placeholder = { Text("Login*", color = Color.Gray, style = typography.labelMedium) },
+                            placeholder = {
+                                Text(
+                                    if (newPasswordCategory == "Teclados de Acesso Físico") "Login (opcional)" else "Login*",
+                                    color = Color.Gray,
+                                    style = typography.labelMedium
+                                )
+                            },
                             singleLine = true,
                             colors = TextFieldDefaults.textFieldColors(
                                 textColor = Color.White,
@@ -1010,15 +1020,20 @@ fun PasswordPage(navController: NavController, viewModel: PasswordViewModel = vi
 
                     Spacer(Modifier.height(24.dp))
 
+                    // Botão de salvar com validação modificada
                     Button(
                         onClick = {
                             keyboardController?.hide()
                             focusManager.clearFocus()
 
-                            if (newPasswordTitle.isBlank() || newPasswordValue.isBlank() || newLoginValue.isBlank()) {
+                            // Validação modificada para "Teclados de Acesso Físico"
+                            val isPhysicalKeyboard = newPasswordCategory == "Teclados de Acesso Físico"
+                            val isLoginRequired = !isPhysicalKeyboard && newLoginValue.isBlank()
+
+                            if (newPasswordTitle.isBlank() || newPasswordValue.isBlank() || isLoginRequired) {
                                 Toast.makeText(
                                     context,
-                                    "Preencha todos os campos",
+                                    "Preencha todos os campos obrigatórios",
                                     Toast.LENGTH_SHORT
                                 ).show()
                                 return@Button
@@ -1285,6 +1300,13 @@ fun PasswordCard(
                     // Exibe a descrição (se houver)
                     Text(
                         text = "Descrição: ${item.description}",
+                        color = Color.Gray,
+                        fontSize = 14.sp
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    // Exibe a url (se houver)
+                    Text(
+                        text = "URL: ${item.url}",
                         color = Color.Gray,
                         fontSize = 14.sp
                     )
