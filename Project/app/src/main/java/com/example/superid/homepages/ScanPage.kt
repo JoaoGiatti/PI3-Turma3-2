@@ -21,6 +21,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -34,22 +35,13 @@ import com.example.superid.R
 import com.google.firebase.auth.FirebaseAuth
 import androidx.camera.core.Preview as CameraPreview
 
-/**
- * Tela de escaneamento de QR Code
- * @param modifier Modificador para personalização do layout
- */
 @Composable
 fun ScanPage(modifier: Modifier = Modifier) {
-    // Estado para armazenar o código QR lido
     var code by remember { mutableStateOf("") }
-    // Contexto atual da aplicação
     val context = LocalContext.current
-    // Dono do ciclo de vida atual (Activity/Fragment)
     val lifecycleOwner = LocalLifecycleOwner.current
-    // Futuro provedor da câmera
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
 
-    // Estado para verificar permissão da câmera
     var hasCameraPermission by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(
@@ -59,16 +51,10 @@ fun ScanPage(modifier: Modifier = Modifier) {
         )
     }
 
-    // Estados para verificação de e-mail
     var isEmailVerified by remember { mutableStateOf(false) }
     var isLoadingVerification by remember { mutableStateOf(true) }
-
-    // Instância do Firebase Authentication
     val auth = FirebaseAuth.getInstance()
 
-    /**
-     * Função para reenviar e-mail de verificação
-     */
     fun resendVerificationEmail() {
         val user = auth.currentUser
         if (user == null) {
@@ -96,7 +82,6 @@ fun ScanPage(modifier: Modifier = Modifier) {
             }
     }
 
-    // Efeito para verificar se o e-mail está validado
     LaunchedEffect(Unit) {
         val user = auth.currentUser
         if (user != null) {
@@ -113,137 +98,163 @@ fun ScanPage(modifier: Modifier = Modifier) {
         }
     }
 
-    // Launcher para solicitar permissão da câmera
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { granted -> hasCameraPermission = granted }
     )
 
-    // Efeito para solicitar permissão da câmera quando a tela é carregada
     LaunchedEffect(true) {
         launcher.launch(Manifest.permission.CAMERA)
     }
 
-    // Layout principal da tela
     Box(modifier = modifier.fillMaxSize()) {
-        // Exibe câmera apenas se tiver permissão e e-mail estiver verificado
-        if (hasCameraPermission && isEmailVerified) {
-            // View para visualização da câmera
-            val previewView = remember { PreviewView(context) }
-
-            // Efeito para configurar e gerenciar o ciclo de vida da câmera
-            DisposableEffect(lifecycleOwner) {
-                val cameraProvider = cameraProviderFuture.get()
-                val preview = CameraPreview.Builder().build()
-                val selector = CameraSelector.Builder()
-                    .requireLensFacing(CameraSelector.LENS_FACING_BACK)
-                    .build()
-                preview.setSurfaceProvider(previewView.surfaceProvider)
-
-                // Configuração da análise de imagem para QR Code
-                val imageAnalysis = ImageAnalysis.Builder()
-                    .setTargetResolution(Size(previewView.width, previewView.height))
-                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                    .build()
-
-                // Analisador de QR Code
-                imageAnalysis.setAnalyzer(
-                    ContextCompat.getMainExecutor(context),
-                    QrCodeAnalizer(context) { result ->
-                        if (result != code) {
-                            code = result
-                            Toast.makeText(context, result, Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                )
-
-                try {
-                    // Vincula os casos de uso da câmera ao ciclo de vida
-                    cameraProvider.bindToLifecycle(
-                        lifecycleOwner,
-                        selector,
-                        preview,
-                        imageAnalysis
-                    )
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-
-                // Limpeza quando o efeito é descartado
-                onDispose {
-                    cameraProvider.unbindAll()
-                }
-            }
-
-            // Exibe a visualização da câmera usando AndroidView
-            AndroidView(
-                factory = { previewView },
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-
-        // Alerta de e-mail não verificado
-        if (!isEmailVerified && !isLoadingVerification) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Topo: logo
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.6f))
-                    .clickable { resendVerificationEmail() },
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .padding(top = 40.dp),
+                contentAlignment = Alignment.TopCenter
             ) {
-                // Card de alerta
-                Card(
-                    shape = RoundedCornerShape(20.dp),
-                    backgroundColor = MaterialTheme.colors.error,
-                    elevation = 12.dp,
-                    modifier = Modifier
-                        .padding(24.dp)
-                        .wrapContentSize()
-                ) {
-                    // Conteúdo do card
-                    Column(
+                val imageResLogo = R.drawable.superid
+                Image(
+                    painter = painterResource(id = imageResLogo),
+                    contentDescription = "Logo SuperID",
+                    modifier = Modifier.height(24.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Divider(
+                color = Color.Gray,
+                thickness = 1.dp,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Box(modifier = Modifier.fillMaxSize()) {
+                if (hasCameraPermission && isEmailVerified) {
+                    val previewView = remember { PreviewView(context) }
+
+                    DisposableEffect(lifecycleOwner) {
+                        val cameraProvider = cameraProviderFuture.get()
+                        val preview = CameraPreview.Builder().build()
+                        val selector = CameraSelector.Builder()
+                            .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+                            .build()
+                        preview.setSurfaceProvider(previewView.surfaceProvider)
+
+                        val imageAnalysis = ImageAnalysis.Builder()
+                            .setTargetResolution(Size(previewView.width, previewView.height))
+                            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                            .build()
+
+                        imageAnalysis.setAnalyzer(
+                            ContextCompat.getMainExecutor(context),
+                            QrCodeAnalizer(context) { result ->
+                                if (result != code) {
+                                    code = result
+                                    Toast.makeText(context, result, Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        )
+
+                        try {
+                            cameraProvider.bindToLifecycle(
+                                lifecycleOwner,
+                                selector,
+                                preview,
+                                imageAnalysis
+                            )
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+
+                        onDispose {
+                            cameraProvider.unbindAll()
+                        }
+                    }
+
+                    AndroidView(
+                        factory = { previewView },
+                        modifier = Modifier.fillMaxSize()
+                    )
+
+                    // Overlay com fundo escuro e guia do QRCode
+                    Box(
                         modifier = Modifier
-                            .padding(24.dp)
-                            .widthIn(min = 250.dp, max = 320.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.4f))
                     ) {
-                        // Ícone de alerta
                         Image(
-                            painter = painterResource(id = R.drawable.alert),
-                            contentDescription = "Alerta",
-                            modifier = Modifier.size(64.dp)
+                            painter = painterResource(id = R.drawable.qr_overlay),
+                            contentDescription = "Guia QR Code",
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .size(210.dp)
                         )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Título do alerta
                         Text(
-                            text = "Valide seu email",
-                            style = MaterialTheme.typography.h6,
+                            text = "Centralize o QRCode no espaço indicado",
                             color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 40.dp),
+                            fontWeight = FontWeight.Medium
                         )
+                    }
+                }
 
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        // Mensagem explicativa
-                        Text(
-                            text = "É necessário validar seu e-mail para usar a função de login sem senha.",
-                            style = MaterialTheme.typography.body2,
-                            color = Color.White,
-                            textAlign = TextAlign.Center
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Instrução para reenviar e-mail
-                        Text(
-                            text = "Toque em qualquer lugar para reenviar o e-mail",
-                            style = MaterialTheme.typography.caption,
-                            color = Color.White.copy(alpha = 0.8f),
-                            textAlign = TextAlign.Center
-                        )
+                if (!isEmailVerified && !isLoadingVerification) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.6f))
+                            .clickable { resendVerificationEmail() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Card(
+                            shape = RoundedCornerShape(20.dp),
+                            backgroundColor = MaterialTheme.colors.error,
+                            elevation = 12.dp,
+                            modifier = Modifier
+                                .padding(24.dp)
+                                .wrapContentSize()
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .padding(24.dp)
+                                    .widthIn(min = 250.dp, max = 320.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.alert),
+                                    contentDescription = "Alerta",
+                                    modifier = Modifier.size(64.dp)
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = "Valide seu email",
+                                    style = MaterialTheme.typography.h6,
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "É necessário validar seu e-mail para usar a função de login sem senha.",
+                                    style = MaterialTheme.typography.body2,
+                                    color = Color.White,
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = "Toque em qualquer lugar para reenviar o e-mail",
+                                    style = MaterialTheme.typography.caption,
+                                    color = Color.White.copy(alpha = 0.8f),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
                     }
                 }
             }
